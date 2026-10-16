@@ -1,4 +1,4 @@
-﻿package org.example.takecareofmyfridgebe.global.response;
+package org.example.takecareofmyfridgebe.global.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

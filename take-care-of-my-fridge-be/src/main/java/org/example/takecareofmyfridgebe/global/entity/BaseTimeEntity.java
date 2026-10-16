@@ -1,4 +1,4 @@
-﻿package org.example.takecareofmyfridgebe.global.entity;
+package org.example.takecareofmyfridgebe.global.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

@@ -1,4 +1,4 @@
-﻿package org.example.takecareofmyfridgebe.global.error;
+package org.example.takecareofmyfridgebe.global.error;
 
 import lombok.Getter;
 
