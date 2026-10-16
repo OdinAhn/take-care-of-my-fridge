@@ -12,8 +12,6 @@
 
 ## 적용 범위
 
-- 프론트 작업: [frontend/AGENTS.md](frontend/AGENTS.md)
-- 백엔드 작업: [backend/AGENTS.md](backend/AGENTS.md)
 - 문서 작성: [문서 규칙](docs/conventions/documentation-standard.md)
 - DB 설계: [DB 규칙](docs/conventions/database.md)
 - 협업: [Git 규칙](docs/conventions/git.md)
@@ -28,13 +26,13 @@
 
 ## 작업별 읽기 경로
 
-| 작업 | 추가로 읽을 자료 |
-|---|---|
-| 화면 구현 | screens.md의 해당 화면, frontend.md, 해당 API |
-| 도메인 구현 | 해당 도메인 설계, backend.md, 관련 DB·API |
-| API 변경 | api-spec.md, 실제 컨트롤러·DTO·직렬화 설정, 프론트 타입 |
-| DB 변경 | database.md, erd.md, data-dictionary.md, 관련 도메인 |
-| 오류 수정 | 재현 조건, 기존 테스트, 관련 작업·문제 기록 |
+| 작업        | 추가로 읽을 자료                                        |
+| ----------- | ------------------------------------------------------- |
+| 화면 구현   | screens.md의 해당 화면, frontend.md, 해당 API           |
+| 도메인 구현 | 해당 도메인 설계, backend.md, 관련 DB·API               |
+| API 변경    | api-spec.md, 실제 컨트롤러·DTO·직렬화 설정, 프론트 타입 |
+| DB 변경     | database.md, erd.md, data-dictionary.md, 관련 도메인    |
+| 오류 수정   | 재현 조건, 기존 테스트, 관련 작업·문제 기록             |
 
 위 파일의 실제 위치는 [README 문서 안내](README.md#문서-안내)에서 찾습니다.
 
@@ -45,8 +43,6 @@
 ## 완료 조건
 
 - 요청된 동작과 예외 흐름을 확인합니다.
-- 프론트 코드: [frontend/AGENTS.md의 검증](frontend/AGENTS.md#검증) 명령을 실행합니다.
-- 백엔드 코드: [backend/AGENTS.md의 검증](backend/AGENTS.md#검증) 명령을 실행합니다.
 - 도구·설정이 없어서 실행하지 못하면 미실행으로 기록합니다. 코드 작업은 검증 대기 상태로 보고합니다.
 - 문서만 바꾼 경우 링크·용어·상태·계약 일관성을 검사합니다. 애플리케이션 테스트를 통과했다고 보고하지 않습니다.
 - 관련 명세를 갱신하고 의미 있는 작업 단위로 [작업 기록](docs/worklogs/_template.md)을 남깁니다.
