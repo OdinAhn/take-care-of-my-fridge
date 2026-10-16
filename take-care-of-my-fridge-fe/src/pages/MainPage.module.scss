@@ -1,0 +1,42 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ant-margin-lg);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ant-margin-lg);
+  align-items: stretch;
+
+  @include from(lg) {
+    grid-template-columns: minmax(0, 780fr) minmax(0, 416fr);
+  }
+}
+
+.leftCol,
+.rightCol {
+  display: flex;
+  min-width: 0;
+}
+
+.rightStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ant-margin-lg);
+  min-width: 0;
+}
+
+.rightStackItem {
+  display: flex;
+  flex: 1;
+}
+
+.fullRow {
+  display: flex;
+  width: 100%;
+}
