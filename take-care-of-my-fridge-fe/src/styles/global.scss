@@ -1,0 +1,17 @@
+// antd v6의 CSS 변수(--ant-*)는 :root가 아니라 ConfigProvider 범위에만 생긴다.
+// body에서는 쓸 수 없으므로 폰트·글자색은 AntdApp, 배경은 Layout이 적용한다.
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  -webkit-font-smoothing: antialiased;
+}
