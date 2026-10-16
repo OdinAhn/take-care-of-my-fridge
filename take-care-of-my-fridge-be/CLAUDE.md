@@ -27,6 +27,7 @@ take-care-of-my-fridge-fe/ 개발 규칙. 이 문서와 기존 코드의 패턴�
 - 관심사 분리 및 트랜잭션 경계: 다중 도메인 조율 및 분산 락 제어는 facade 계층을 통하고, 외부 I/O 및 비동기 작업은 트랜잭션 커밋 후(AFTER_COMMIT) 이벤트로 분리한다.
 
 3. 구조
+```
    org.example.{project}
    ├── domain/{domain_name}
    │   ├── controller       # REST API 엔드포인트
@@ -43,11 +44,12 @@ take-care-of-my-fridge-fe/ 개발 규칙. 이 문서와 기존 코드의 패턴�
    ├── response         # ApiResponse, PageResponse
    ├── filter           # JWT 인증/인가 필터
    └── entity           # BaseTimeEntity (createdAt, updatedAt 등 공통 엔티티)
-
+```
 - 모든 인프라성 설정(JPA Auditing, QueryDSL, Redis, Redisson, Kafka 등)은 global/config/의 단일 Config 클래스로 관리한다. 도메인 패키지 내부에서 @Configuration을 중복 선언하지 않는다.
 
 4. 레이어별 구현 규칙
-   4.1 Controller
+
+4.1 Controller
 - 반환 타입은 항상 ResponseEntity<ApiResponse<T>> 형태를 유지한다. 원시값, 단순 DTO, Entity 직접 반환 금지.
 - 의존성 주입은 @RequiredArgsConstructor + private final을 사용한다.
 - 입력값 검증은 @Valid를 필수로 적용하고, 요청 파라미터는 Request record로 수신한다.
@@ -90,74 +92,78 @@ take-care-of-my-fridge-fe/ 개발 규칙. 이 문서와 기존 코드의 패턴�
 - 컨슈머 멱등성(Idempotency): 네트워크 재전송에 대비하여 동일한 메시지가 2회 이상 유입되어도 시스템 상태가 왜곡되지 않도록 중복 처리 검증 로직을 구현한다.
 
 5. API 응답 및 에러 표준
-   5.1 응답 규격 (ApiResponse<T> & PageResponse<T>)
+
+5.1 응답 규격 (ApiResponse<T> & PageResponse<T>)
+```java
    // global/response/ApiResponse.java
    public record ApiResponse<T>(
-   boolean success,
-   T data,
-   ErrorResponse error
+      boolean success,
+      T data,
+      ErrorResponse error
    ) {
-   public static <T> ApiResponse<T> ok(T data) {
-   return new ApiResponse<>(true, data, null);
+      public static <T> ApiResponse<T> ok(T data) {
+         return new ApiResponse<>(true, data, null);
+      }
+
+      public static <T> ApiResponse<T> ok() {
+         return new ApiResponse<>(true, null, null);
+      }
+
+      public static <T> ApiResponse<T> error(String code, String message) {
+         return new ApiResponse<>(false, null, new ErrorResponse(code, message));
+      }
    }
 
-   public static <T> ApiResponse<T> ok() {
-   return new ApiResponse<>(true, null, null);
+   // global/response/ErrorResponse.java
+   public record ErrorResponse(
+   String code,
+   String message
+   ) {}
+   
+   // global/response/PageResponse.java (antd Table 1-based index 호환)
+   public record PageResponse<T>(
+      List<T> content,
+      int pageNumber,
+      int pageSize,
+      long totalElements,
+      int totalPages,
+      boolean isLast
+   ) {
+      public static <T> PageResponse<T> of(Page<T> page) {
+         return new PageResponse<>(
+            page.getContent(),
+            page.getNumber() + 1,
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.isLast()
+         );
+      }
    }
-
-   public static <T> ApiResponse<T> error(String code, String message) {
-   return new ApiResponse<>(false, null, new ErrorResponse(code, message));
-   }
-   }
-
-// global/response/ErrorResponse.java
-public record ErrorResponse(
-String code,
-String message
-) {}
-
-// global/response/PageResponse.java (antd Table 1-based index 호환)
-public record PageResponse<T>(
-List<T> content,
-int pageNumber,
-int pageSize,
-long totalElements,
-int totalPages,
-boolean isLast
-) {
-public static <T> PageResponse<T> of(Page<T> page) {
-return new PageResponse<>(
-page.getContent(),
-page.getNumber() + 1,
-page.getSize(),
-page.getTotalElements(),
-page.getTotalPages(),
-page.isLast()
-);
-}
-}
-
+```
 5.2 Controller 반환 패턴
-// 단건 조회
-@GetMapping("/{id}")
-public ResponseEntity<ApiResponse<ProductResponse>> getProduct(@PathVariable Long id) {
-ProductResponse response = productService.getProduct(id);
-return ResponseEntity.ok(ApiResponse.ok(response));
-}
-
-// 반환 데이터가 없는 CUD
-@DeleteMapping("/{id}")
-public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long id) {
-productService.deleteProduct(id);
-return ResponseEntity.ok(ApiResponse.ok());
-}
-
-// 페이징 목록 조회
-@GetMapping
-public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getProducts(Pageable pageable) {
-PageResponse<ProductResponse> response = productService.getProducts(pageable);
-return ResponseEntity.ok(ApiResponse.ok(response));
-}
+```java
+   // 단건 조회
+   @GetMapping("/{id}")
+   public ResponseEntity<ApiResponse<ProductResponse>> getProduct(@PathVariable Long id) {
+      ProductResponse response = productService.getProduct(id);
+      return ResponseEntity.ok(ApiResponse.ok(response));
+   }
+   
+   // 반환 데이터가 없는 CUD
+   @DeleteMapping("/{id}")
+   public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long id) {
+      productService.deleteProduct(id);
+      return ResponseEntity.ok(ApiResponse.ok());
+   }
+   
+   // 페이징 목록 조회
+   @GetMapping
+   public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getProducts(Pageable pageable) {
+      PageResponse<ProductResponse> response = productService.getProducts(pageable);
+      return ResponseEntity.ok(ApiResponse.ok(response));
+   }
+```
 
 5.3 예외 처리 아키텍처
 - 비즈니스 예외는 ErrorCode enum을 가진 BusinessException을 throw한다.
@@ -166,16 +172,17 @@ return ResponseEntity.ok(ApiResponse.ok(response));
     - BusinessException: errorCode.getHttpStatus()에 맞춰 ApiResponse.error(code, message) 응답.
     - MethodArgumentNotValidException: 400 Bad Request와 함께 @NotBlank 등의 유효성 검증 실패 메시지를 추출해 응답.
     - 미처리 Exception: 500 에러 코드(S001)로 마스킹하고, 서버 콘솔/로그에만 상세 log.error 스택트레이스를 남긴다.
-
+```java
 // global/error/ErrorCode.java 예시
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "적절하지 않은 요청 값입니다."),
-RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "C002", "해당 리소스를 찾을 수 없습니다."),
-INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다.");
-
+   INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "적절하지 않은 요청 값입니다."),
+   RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "C002", "해당 리소스를 찾을 수 없습니다."),
+   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다.");
+   
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
 }
+```
