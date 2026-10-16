@@ -100,13 +100,13 @@ org.example.{project}
 - 기본키(PK): `@Id`, `@GeneratedValue(strategy = GenerationType.IDENTITY)`.
 - 공통 감사 필드: BaseTimeEntity를 상속해 createdAt, updatedAt을 관리한다.
 - 연관관계: 모든 연관관계 매핑(`@ManyToOne`, `@OneToOne` 등)은 `fetch = FetchType.LAZY` 필수.
-- 생성자/빌더: 엔티티 내부에 `create(...)` 등 정적 팩토리 메서드를 두지 않는다. `private`(또는 `protected`) 생성자 위에 `@Builder`를 선언하고, 생성자 내부에서 필수값·도메인 규칙 검증 및 기본 상태값 초기화를 수행한다.
+- 생성자/빌더: 엔티티 내부에 `create(...)` 등 정적 팩토리 메서드를 두지 않는다. `private`(또는 `protected`) 생성자 위에 `@Builder`를 선언해 필드를 초기화한다.
 - `@Setter` 절대 금지. 상태 전이 및 필드 변경은 도메인 행위 중심의 엔티티 메서드로 캡슐화한다.
 
 #### 4.4 DTO (Data Transfer Object)
 
 - 모든 DTO는 불변 객체인 Java record로 작성한다 (필요 시 Response 조립용 `@Builder` 허용).
-- Request -> Entity: 엔티티 생성 변환 책임은 Request DTO가 가진다. Request record 내부에 `toEntity(...)` (또는 생성 변환 메서드)를 구현해 `Entity.builder()...build()`로 엔티티를 생성한다.
+- Request -> Entity: 입력값·필수값 검증 및 엔티티 생성 변환 책임은 Request DTO가 가진다. Request record 내부에 `toEntity(...)` (또는 생성 변환 메서드)를 구현해 `Entity.builder()...build()`로 엔티티를 생성한다.
 - Entity -> Response: Response record 내부에 `public static Response from(Entity entity)` 정적 팩토리 메서드를 구현해 DTO가 조립 책임을 가진다.
 - 유효성 검증: Request 필드에 `@NotBlank`, `@NotNull`, `@Min` 등을 선언하고 상세한 message를 작성한다.
 - 날짜/시간 필드는 ISO-8601 문자열 기준 직렬화를 기본으로 하며, 필요 시 `@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")`를 명시한다.
