@@ -1,43 +1,30 @@
 package org.example.takecareofmyfridgebe.global.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
 import org.example.takecareofmyfridgebe.global.error.ErrorCode;
 
-
-@Getter
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse<T> {
-
-    private static final String SUCCESS_CODE = "SUCCESS";
-
-    private final String code;
-    private final String message;
-    private final T data;
-
-    private ApiResponse(String code, String message, T data) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
-    }
+public record ApiResponse<T>(
+        boolean success,
+        T data,
+        ErrorResponse error
+) {
 
     public static <T> ApiResponse<T> ok(T data) {
-        return new ApiResponse<>(SUCCESS_CODE, null, data);
+        return new ApiResponse<>(true, data, null);
     }
 
-    public static ApiResponse<Void> ok() {
-        return new ApiResponse<>(SUCCESS_CODE, null, null);
+    public static <T> ApiResponse<T> ok() {
+        return new ApiResponse<>(true, null, null);
     }
 
-    public static ApiResponse<Void> error(ErrorCode errorCode) {
-        return new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), null);
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+        return error(errorCode.getCode(), errorCode.getMessage());
     }
 
-    public static ApiResponse<Void> error(ErrorCode errorCode, String message) {
-        return new ApiResponse<>(errorCode.getCode(), message, null);
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
+        return error(errorCode.getCode(), message);
     }
 
-    public static ApiResponse<Void> error(String code, String message) {
-        return new ApiResponse<>(code, message, null);
+    public static <T> ApiResponse<T> error(String code, String message) {
+        return new ApiResponse<>(false, null, new ErrorResponse(code, message));
     }
 }
