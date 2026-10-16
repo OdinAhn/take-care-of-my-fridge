@@ -1,0 +1,9 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+// 모바일 우선: 기본 스타일은 모바일, 큰 화면만 from(bp)로 덮어쓴다.
+@mixin from($bp) {
+  @media (min-width: map.get($breakpoints, $bp)) {
+    @content;
+  }
+}

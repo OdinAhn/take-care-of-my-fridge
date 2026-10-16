@@ -1,0 +1,105 @@
+{{!
+  take-care-of-my-fridge(plinoa-frontend에서 가져옴): openapi-generator 7.24.0의 typescript-axios/baseApi.mustache를 복사해 생성자 매개변수 속성
+  (constructor(protected basePath ...))만 일반 필드 대입으로 바꿨다. tsconfig의 erasableSyntaxOnly가
+  매개변수 속성을 허용하지 않아 생성 코드가 tsc -b에서 실패하기 때문이다. 생성기 버전을 올리면 원본과 다시 비교한다.
+}}
+/* tslint:disable */
+/* eslint-disable */
+{{>licenseInfo}}
+
+
+import type { Configuration } from './configuration{{importFileExtension}}';
+// Some imports not used depending on template conditions
+// @ts-ignore
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
+import globalAxios from 'axios';
+
+export const BASE_PATH = "{{{basePath}}}".replace(/\/+$/, "");
+
+export const COLLECTION_FORMATS = {
+    csv: ",",
+    ssv: " ",
+    tsv: "\t",
+    pipes: "|",
+};
+
+export interface RequestArgs {
+    url: string;
+    options: RawAxiosRequestConfig;
+}
+
+export class BaseAPI {
+    protected configuration: Configuration | undefined;
+    protected basePath: string;
+    protected axios: AxiosInstance;
+
+    constructor(configuration?: Configuration, basePath: string = BASE_PATH, axios: AxiosInstance = globalAxios) {
+        this.basePath = basePath;
+        this.axios = axios;
+        if (configuration) {
+            this.configuration = configuration;
+            this.basePath = configuration.basePath ?? basePath;
+        }
+    }
+};
+
+export class RequiredError extends Error {
+    public field: string;
+
+    constructor(field: string, msg?: string) {
+        super(msg);
+        this.field = field;
+        this.name = "RequiredError"
+    }
+}
+
+interface ServerMap {
+    [key: string]: {
+        url: string,
+        description: string,
+    }[];
+}
+
+export const operationServerMap: ServerMap = {
+    {{#apiInfo}}
+    {{#apis}}
+    {{#operations}}
+    {{#operation}}
+    {{#servers}}
+    {{#-first}}
+    "{{{classname}}}.{{{nickname}}}": [
+    {{/-first}}
+        {
+            url: "{{{url}}}",
+            description: "{{{description}}}{{^description}}No description provided{{/description}}",
+            {{#variables}}
+            {{#-first}}
+            variables: {
+                {{/-first}}
+                {{{name}}}: {
+                    description: "{{{description}}}{{^description}}No description provided{{/description}}",
+                    default_value: "{{{defaultValue}}}",
+                    {{#enumValues}}
+                    {{#-first}}
+                    enum_values: [
+                    {{/-first}}
+                        "{{{.}}}"{{^-last}},{{/-last}}
+                    {{#-last}}
+                    ]
+                    {{/-last}}
+                    {{/enumValues}}
+                    }{{^-last}},{{/-last}}
+                {{#-last}}
+            }
+            {{/-last}}
+            {{/variables}}
+        }{{^-last}},{{/-last}}
+    {{#-last}}
+    ],
+    {{/-last}}
+    {{/servers}}
+    {{/operation}}
+    {{/operations}}
+    {{/apis}}
+    {{/apiInfo}}
+}

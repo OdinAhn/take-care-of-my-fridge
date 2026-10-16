@@ -1,0 +1,17 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.layout {
+  min-height: 100vh;
+}
+
+.content {
+  width: 100%;
+  max-width: $content-max-width;
+  margin: 0 auto;
+  padding: var(--ant-padding);
+
+  @include from(md) {
+    padding: var(--ant-padding-xl) var(--ant-padding-lg);
+  }
+}

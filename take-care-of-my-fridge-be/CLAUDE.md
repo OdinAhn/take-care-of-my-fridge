@@ -1,12 +1,11 @@
 # CLAUDE.md — take-care-of-my-fridge-be
 
-take-care-of-my-fridge-fe/ 개발 규칙. 이 문서와 기존 코드의 패턴을 따른다. 충돌하면 이 문서가 우선이며 그 사실을 보고한다.
+take-care-of-my-fridge-be/ 개발 규칙. 이 문서와 기존 코드의 패턴을 따른다. 충돌하면 이 문서가 우선이며 그 사실을 보고한다.
 
 0. 작업 절차
    시작 전
 1. API 변경 또는 추가 작업 시, domain/{도메인}/dto 및 global/response 구조를 확인한다.
-2. 프론트엔드 연동 작업이면 먼저 frontend/src/api/<domain>.ts의 타입과 맞는지 확인한다. 다르면 백엔드 DTO 기준으로 싱크를 맞추거나 변경 사항을 기록한다.
-3. Gradle 의존성 변경이 있거나 최초 세팅 시에만 ./gradlew build --dry-run 또는 의존성 갱신을 확인한다.
+2. Gradle 의존성 변경이 있거나 최초 세팅 시에만 ./gradlew build --dry-run 또는 의존성 갱신을 확인한다.
    완료 전 (모두 통과해야 완료)
    ./gradlew clean compileJava compileTestJava
    ./gradlew test
