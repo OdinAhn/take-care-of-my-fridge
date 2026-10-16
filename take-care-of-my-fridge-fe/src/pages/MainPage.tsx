@@ -1,12 +1,47 @@
-import { Flex, Typography } from 'antd';
+import { Typography } from 'antd';
+
+import { SectionCard } from '@/common/components/SectionCard';
+import { IngredientInputSection } from '@/domains/fridge/components/IngredientInputSection';
+import { MyFridgeSection } from '@/domains/fridge/components/MyFridgeSection';
+import { RecentReviewSection } from '@/domains/review/components/RecentReviewSection';
+
+import styles from './MainPage.module.scss';
 
 export default function MainPage() {
   return (
-    <Flex vertical gap="small">
-      <Typography.Title level={2}>냉장고를 부탁해</Typography.Title>
-      <Typography.Paragraph type="secondary">
-        냉장고에 남은 재료를 관리하고, 보유 재료에 맞는 레시피를 찾아보세요.
-      </Typography.Paragraph>
-    </Flex>
+    <div className={styles.page}>
+      <div className={styles.row}>
+        <div className={styles.leftCol}>
+          <IngredientInputSection />
+        </div>
+        <div className={styles.rightCol}>
+          <MyFridgeSection />
+        </div>
+      </div>
+
+      <div className={styles.row}>
+        <div className={styles.leftCol}>
+          <SectionCard title="지금 냉장고로 만들 수 있는 메뉴">
+            <Typography.Text type="secondary">준비 중</Typography.Text>
+          </SectionCard>
+        </div>
+        <div className={styles.rightStack}>
+          <div className={styles.rightStackItem}>
+            <SectionCard title="특가 상품">
+              <Typography.Text type="secondary">준비 중</Typography.Text>
+            </SectionCard>
+          </div>
+          <div className={styles.rightStackItem}>
+            <RecentReviewSection />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.fullRow}>
+        <SectionCard title="오늘의 밀키트 큐레이션">
+          <Typography.Text type="secondary">준비 중</Typography.Text>
+        </SectionCard>
+      </div>
+    </div>
   );
 }
