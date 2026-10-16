@@ -18,8 +18,8 @@
 
 | 명령 | 결과 |
 |---|---|
-| `./gradlew clean compileJava compileTestJava` | 통과 |
-| `./gradlew test --tests org.example.takecareofmyfridgebe.global.response.ApiResponseTest` | 2개 통과 |
-| `./gradlew test` | 기존 `contextLoads` 1개 실패: 로컬 MySQL `fridge_user` 인증 거부 |
+| `.\\gradlew.bat clean compileJava compileTestJava` | 통과 |
+| `.\\gradlew.bat test --tests org.example.takecareofmyfridgebe.global.response.ApiResponseTest` | 2개 통과 |
+| `.\\gradlew.bat test` | 기존 `contextLoads` 1개 실패: 로컬 MySQL `fridge_user` 인증 거부 |
 
 DB 연결이 필요한 전체 테스트는 해당 환경의 접속 설정을 확인한 뒤 다시 실행해야 한다.
