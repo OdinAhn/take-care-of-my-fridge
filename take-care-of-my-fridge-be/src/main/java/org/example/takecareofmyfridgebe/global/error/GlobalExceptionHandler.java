@@ -1,4 +1,4 @@
-﻿package org.example.takecareofmyfridgebe.global.error;
+package org.example.takecareofmyfridgebe.global.error;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
