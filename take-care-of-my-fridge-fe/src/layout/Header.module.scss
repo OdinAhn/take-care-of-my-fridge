@@ -1,0 +1,35 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: $header-height;
+  padding: 0 var(--ant-padding);
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+
+  @include from(md) {
+    padding: 0 var(--ant-padding-lg);
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  max-width: $content-max-width;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.brandText {
+  font-size: var(--ant-font-size-lg);
+  color: var(--ant-color-primary);
+}
