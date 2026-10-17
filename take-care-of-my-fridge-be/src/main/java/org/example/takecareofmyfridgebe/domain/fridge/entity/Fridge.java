@@ -35,6 +35,7 @@ public class Fridge extends BaseTimeEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    // 타 도메인(Member)과의 결합도를 낮추기 위해 연관관계 대신 ID로만 참조
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
