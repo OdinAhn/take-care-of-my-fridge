@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.takecareofmyfridgebe.global.entity.BaseTimeEntity;
@@ -47,23 +48,11 @@ public class ChatSession extends BaseTimeEntity {
     @Column(name = "last_message_at", nullable = false)
     private LocalDateTime lastMessageAt;
 
-    private ChatSession(
-        Long memberId,
-        ChatSessionStatus status,
-        LocalDateTime lastMessageAt
-    ) {
+    @Builder
+    private ChatSession(Long memberId) {
         this.memberId = memberId;
-        this.status = status;
-        this.lastMessageAt = lastMessageAt;
-    }
-
-    // 상담 세션 시작 (ACTIVE 상태, 마지막 대화 일시는 현재 시각)
-    public static ChatSession start(Long memberId) {
-        return new ChatSession(
-            memberId,
-            ChatSessionStatus.ACTIVE,
-            LocalDateTime.now()
-        );
+        this.status = ChatSessionStatus.ACTIVE;
+        this.lastMessageAt = LocalDateTime.now();
     }
 
     // 진행 중(ACTIVE)일 때만 마지막 대화 일시 갱신

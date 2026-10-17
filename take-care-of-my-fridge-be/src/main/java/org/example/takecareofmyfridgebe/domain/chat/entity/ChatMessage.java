@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.takecareofmyfridgebe.global.entity.BaseTimeEntity;
@@ -50,6 +51,7 @@ public class ChatMessage extends BaseTimeEntity {
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Builder
     private ChatMessage(
         ChatSession session,
         int sequence,
@@ -60,15 +62,5 @@ public class ChatMessage extends BaseTimeEntity {
         this.sequence = sequence;
         this.role = role;
         this.content = content;
-    }
-
-    // 상담 메시지 생성
-    public static ChatMessage create(
-        ChatSession session,
-        int sequence,
-        ChatMessageRole role,
-        String content
-    ) {
-        return new ChatMessage(session, sequence, role, content);
     }
 }

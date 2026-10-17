@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.takecareofmyfridgebe.global.entity.BaseTimeEntity;
@@ -51,6 +52,7 @@ public class ChatRecommendation extends BaseTimeEntity {
     @Column(name = "display_order", nullable = false)
     private int displayOrder;
 
+    @Builder
     private ChatRecommendation(
         ChatMessage message,
         Long recipeId,
@@ -62,24 +64,6 @@ public class ChatRecommendation extends BaseTimeEntity {
         this.recipeId = recipeId;
         this.productId = productId;
         this.displayOrder = displayOrder;
-    }
-
-    // 레시피 추천 결과 생성
-    public static ChatRecommendation ofRecipe(
-        ChatMessage message,
-        Long recipeId,
-        int displayOrder
-    ) {
-        return new ChatRecommendation(message, recipeId, null, displayOrder);
-    }
-
-    // 상품 추천 결과 생성
-    public static ChatRecommendation ofProduct(
-        ChatMessage message,
-        Long productId,
-        int displayOrder
-    ) {
-        return new ChatRecommendation(message, null, productId, displayOrder);
     }
 
     // recipeId와 productId 중 정확히 하나만 존재해야 함
