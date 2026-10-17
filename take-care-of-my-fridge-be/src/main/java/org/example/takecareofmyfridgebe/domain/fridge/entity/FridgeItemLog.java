@@ -38,6 +38,7 @@ public class FridgeItemLog extends BaseTimeEntity {
     @JoinColumn(name = "ingredient_id", nullable = false)
     private Ingredient ingredient;
 
+    // 타 도메인(CookingLog)과의 결합도를 낮추기 위해 연관관계 대신 ID로만 참조 (요리 완료로 소진한 경우만)
     @Column(name = "cooking_log_id", nullable = true)
     private Long cookingLogId;
 
@@ -65,6 +66,8 @@ public class FridgeItemLog extends BaseTimeEntity {
         BigDecimal quantity,
         FridgeItemAction action
     ) {
+        validateCookingLog(action, cookingLogId);
+
         this.memberId = memberId;
         this.ingredient = ingredient;
         this.cookingLogId = cookingLogId;
@@ -72,5 +75,12 @@ public class FridgeItemLog extends BaseTimeEntity {
         this.rawName = rawName;
         this.quantity = quantity;
         this.action = action;
+    }
+
+    // 버린 재료에는 요리 기록을 연결할 수 없음
+    private static void validateCookingLog(FridgeItemAction action, Long cookingLogId) {
+        if (action == FridgeItemAction.DISCARDED && cookingLogId != null) {
+            throw new IllegalArgumentException("버린 재료에는 요리 기록을 연결할 수 없습니다.");
+        }
     }
 }

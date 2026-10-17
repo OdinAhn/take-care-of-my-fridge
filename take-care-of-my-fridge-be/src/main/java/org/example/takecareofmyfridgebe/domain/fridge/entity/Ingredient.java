@@ -83,4 +83,9 @@ public class Ingredient extends BaseTimeEntity {
     public boolean isCustom() {
         return ING_CUSTOM.equals(this.ingredientCode);
     }
+
+    // 밀키트(ING_MEALKIT) 여부 확인 (요리 완료 차감 대상 아님)
+    public boolean isMealkit() {
+        return ING_MEALKIT.equals(this.ingredientCode);
+    }
 }

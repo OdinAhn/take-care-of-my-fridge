@@ -74,6 +74,10 @@ public class Fridge extends BaseTimeEntity {
         LocalDate expirationDate,
         FridgeSource source
     ) {
+        FridgeSource resolvedSource = source != null ? source : FridgeSource.MANUAL;
+        validatePositiveQuantity(quantity);
+        validateOrderItem(resolvedSource, orderItemId);
+
         this.memberId = memberId;
         this.ingredient = ingredient;
         this.orderItemId = orderItemId;
@@ -81,7 +85,7 @@ public class Fridge extends BaseTimeEntity {
         this.quantity = quantity;
         this.storage = storage;
         this.expirationDate = expirationDate;
-        this.source = source != null ? source : FridgeSource.MANUAL;
+        this.source = resolvedSource;
     }
 
     // 재료 정보(표시명, 수량, 보관방식, 소비기한) 수정
@@ -91,6 +95,7 @@ public class Fridge extends BaseTimeEntity {
         StorageType storage,
         LocalDate expirationDate
     ) {
+        validatePositiveQuantity(quantity);
         this.rawName = rawName;
         this.quantity = quantity;
         this.storage = storage;
@@ -99,6 +104,9 @@ public class Fridge extends BaseTimeEntity {
 
     // 재료 수량 차감 (잔여량이 0.05 미만이면 0으로 보정, 음수 방지)
     public void deduct(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("차감 수량은 0보다 커야 합니다.");
+        }
         BigDecimal remaining = this.quantity.subtract(amount);
         if (remaining.compareTo(ZERO_THRESHOLD) < 0) {
             this.quantity = BigDecimal.ZERO;
@@ -123,5 +131,25 @@ public class Fridge extends BaseTimeEntity {
             return false;
         }
         return !this.expirationDate.isAfter(today.plusDays(IMMINENT_DAYS));
+    }
+
+    // 수량은 0보다 커야 함
+    private static void validatePositiveQuantity(BigDecimal quantity) {
+        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("수량은 0보다 커야 합니다.");
+        }
+    }
+
+    // 커머스 입고만 주문 상품 ID를 가짐
+    private static void validateOrderItem(FridgeSource source, Long orderItemId) {
+        boolean isCommerce = source == FridgeSource.COMMERCE;
+        boolean hasOrderItem = orderItemId != null;
+
+        if (isCommerce && !hasOrderItem) {
+            throw new IllegalArgumentException("커머스 입고는 주문 상품 ID가 필요합니다.");
+        }
+        if (!isCommerce && hasOrderItem) {
+            throw new IllegalArgumentException("직접 등록은 주문 상품 ID를 가질 수 없습니다.");
+        }
     }
 }
