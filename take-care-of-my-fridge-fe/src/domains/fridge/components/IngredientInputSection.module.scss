@@ -1,0 +1,98 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--ant-margin-sm);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ant-margin-xs);
+
+  @include from(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include from(xl) {
+    grid-template-columns:
+      minmax(0, 188fr)
+      minmax(0, 160fr)
+      minmax(0, 132fr)
+      minmax(0, 108fr)
+      minmax(0, 112fr);
+  }
+}
+
+.nameInput,
+.quantityInput,
+.datePicker,
+.storageSelect,
+.addButton {
+  width: 100%;
+}
+
+.unitHint {
+  font-size: var(--ant-font-size-sm);
+}
+
+.quickRow {
+  min-height: var(--ant-control-height);
+}
+
+.quickLabel {
+  font-size: var(--ant-font-size-sm);
+}
+
+.chipButton {
+  font-size: var(--ant-font-size-sm);
+}
+
+.divider {
+  margin: var(--ant-margin-xxs) 0;
+}
+
+.stagedList {
+  flex: 1;
+}
+
+.stagedItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 0.8fr) auto;
+  align-items: center;
+  gap: var(--ant-margin-xs);
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+}
+
+.stagedName,
+.stagedQty,
+.stagedDate,
+.stagedStorage {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stagedDate,
+.stagedStorage {
+  font-size: var(--ant-font-size-sm);
+}
+
+.removeButton {
+  border: 1px solid var(--ant-color-border);
+}
+
+.footerActions {
+  margin-top: auto;
+  padding-top: var(--ant-padding-xs);
+}
+
+.actionButton {
+  min-width: 120px;
+}

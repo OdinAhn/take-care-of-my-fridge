@@ -1,0 +1,119 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: $header-height;
+  padding: 0 var(--ant-padding);
+  line-height: normal;
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+
+  @include from(md) {
+    padding: 0 var(--ant-padding-lg);
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ant-margin);
+  max-width: $content-max-width;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ant-margin-xs);
+  min-height: 44px;
+}
+
+.logoMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ant-control-height);
+  height: var(--ant-control-height);
+  background: var(--ant-color-text);
+  border-radius: var(--ant-border-radius);
+}
+
+.logoDoor {
+  position: relative;
+  width: var(--ant-font-size-sm);
+  height: var(--ant-font-size-lg);
+  border: 2px solid var(--ant-color-bg-container);
+  border-radius: 2px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 35%;
+    right: 0;
+    left: 0;
+    border-top: 2px solid var(--ant-color-bg-container);
+  }
+}
+
+.brandText {
+  font-size: var(--ant-font-size-lg);
+  color: var(--ant-color-text);
+}
+
+.searchWrapper {
+  display: none;
+  flex: 1;
+  max-width: 300px;
+
+  @include from(md) {
+    display: block;
+  }
+}
+
+.searchInput {
+  border-radius: var(--ant-control-height);
+}
+
+.desktopNav {
+  display: none;
+  align-items: center;
+  gap: var(--ant-margin-xxs);
+  margin-left: auto;
+
+  @include from(lg) {
+    display: flex;
+  }
+}
+
+.navButton {
+  min-height: 44px;
+}
+
+.actions {
+  flex-shrink: 0;
+  margin-left: auto;
+
+  @include from(lg) {
+    margin-left: 0;
+  }
+}
+
+.mobileMenuTrigger {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.drawerNavButton {
+  justify-content: flex-start;
+  min-height: 44px;
+}
+
+.drawerNavInner {
+  width: 100%;
+}

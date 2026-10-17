@@ -8,7 +8,7 @@
 - [공통 지침](../../AGENTS.md), [백엔드 진입점](../../backend/AGENTS.md), [DB 규칙](database.md)을 함께 적용합니다.
 - S3 추가: JPAQueryFactory·RedisTemplate·KafkaTemplate은 등록된 빈을 주입하고 중복 생성하지 않습니다.
 - S3는 같은 클래스명 충돌 시 FQCN 예외를 허용하지만 S1은 일괄 금지입니다. 와일드카드 import도 금지/지양이 다릅니다. 합의 전 금지 기준을 유지하고 충돌 상황을 보고합니다.
-- Lombok 허용 목록과 Builder 사용 규칙이 다릅니다. 합의 전 명시적 생성자·정적 팩토리를 사용하면 충돌을 피할 수 있습니다.
+- Lombok 허용 목록: `@Getter`, `@Builder`, `@RequiredArgsConstructor`, `@NoArgsConstructor(access = AccessLevel.PROTECTED)`를 허용하며, 엔티티는 `@Builder` 생성자 패턴을 사용하고 Request -> Entity 변환은 Request DTO에서 수행합니다.
 - 단일 Config가 전체 설정 한 클래스인지, 기술별 중복 방지인지 Q-17에서 확정합니다.
 - 감사 시각의 JPA/DB 관리 주체는 Q-06입니다. 중복 자동 갱신을 임의로 구성하지 않습니다.
 - S3의 BusinessException은 ErrorCode 보유 및 하위 예외를 허용합니다. 공통 처리기의 ErrorCode 접근 방식까지 구현 시 확인합니다.
@@ -46,7 +46,7 @@ backend/ 개발 규칙. 이 문서와 기존 코드의 패턴을 따른다. 충�
 Java 17 · Spring Boot 3.x · Gradle · Spring Data JPA · QueryDSL 5.x · Redis & Redisson · Apache Kafka · Spring Security · JUnit 5 + Mockito
 
 - Java 17 최신 문법(record, pattern matching, switch expressions)을 적극 사용한다.
-- 롬복은 최소화한다: `@Getter`, `@RequiredArgsConstructor`, `@NoArgsConstructor(access = AccessLevel.PROTECTED)`만 허용.
+- 롬복은 최소화한다: `@Getter`, `@Builder`, `@RequiredArgsConstructor`, `@NoArgsConstructor(access = AccessLevel.PROTECTED)`만 허용.
 - 금지: `@Setter`, `@Data`, `@AllArgsConstructor`, 필드 인젝션(`@Autowired`), FQCN(코드 본문 풀 패키지 경로 작성), 와일드카드 import(`import java.util.*`).
 - 새 라이브러리 추가는 사용자 확인 후 `build.gradle`에 반영한다.
 
@@ -100,13 +100,13 @@ org.example.{project}
 - 기본키(PK): `@Id`, `@GeneratedValue(strategy = GenerationType.IDENTITY)`.
 - 공통 감사 필드: BaseTimeEntity를 상속해 createdAt, updatedAt을 관리한다.
 - 연관관계: 모든 연관관계 매핑(`@ManyToOne`, `@OneToOne` 등)은 `fetch = FetchType.LAZY` 필수.
-- 생성자/빌더: 생성자와 `@Builder`는 private 또는 protected로 제한하고, 정적 팩토리 메서드(`create(...)`, `of(...)`)로만 엔티티를 생성한다.
+- 생성자/빌더: 엔티티 내부에 `create(...)` 등 정적 팩토리 메서드를 두지 않는다. `private`(또는 `protected`) 생성자 위에 `@Builder`를 선언해 필드를 초기화한다.
 - `@Setter` 절대 금지. 상태 전이 및 필드 변경은 도메인 행위 중심의 엔티티 메서드로 캡슐화한다.
 
 #### 4.4 DTO (Data Transfer Object)
 
-- 모든 DTO는 불변 객체인 Java record로 작성한다 (Lombok 사용 금지).
-- Request -> Entity: Request DTO 내부에 변환 로직을 두지 않고, Service에서 파라미터를 꺼내 `Entity.create(...)` 팩토리 메서드를 호출한다.
+- 모든 DTO는 불변 객체인 Java record로 작성한다 (필요 시 Response 조립용 `@Builder` 허용).
+- Request -> Entity: 입력값·필수값 검증 및 엔티티 생성 변환 책임은 Request DTO가 가진다. Request record 내부에 `toEntity(...)` (또는 생성 변환 메서드)를 구현해 `Entity.builder()...build()`로 엔티티를 생성한다.
 - Entity -> Response: Response record 내부에 `public static Response from(Entity entity)` 정적 팩토리 메서드를 구현해 DTO가 조립 책임을 가진다.
 - 유효성 검증: Request 필드에 `@NotBlank`, `@NotNull`, `@Min` 등을 선언하고 상세한 message를 작성한다.
 - 날짜/시간 필드는 ISO-8601 문자열 기준 직렬화를 기본으로 하며, 필요 시 `@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")`를 명시한다.
