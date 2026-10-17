@@ -115,7 +115,7 @@ class AdminMemberControllerTest {
         mvc.perform(get("/api/admin/members?role=OWNER")
                         .with(authenticationFor(Member.Role.ADMIN)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("요청 값의 형식이 올바르지 않습니다."));
+                .andExpect(jsonPath("$.error.message").value("요청 값의 형식이 올바르지 않습니다."));
     }
 
     @Test
@@ -134,7 +134,7 @@ class AdminMemberControllerTest {
         mvc.perform(post("/api/admin/members/12/promotion")
                         .with(csrf()).with(authenticationFor(Member.Role.ADMIN)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("M007"));
+                .andExpect(jsonPath("$.error.code").value("M007"));
         verify(auditLogService).record(7L, AdminAuditLog.Action.ROLE_CHANGE,
                 "Member", 12L, AdminAuditLog.Result.FAILED);
     }
@@ -144,7 +144,7 @@ class AdminMemberControllerTest {
         mvc.perform(post("/api/admin/members/12/promotion")
                         .with(csrf()).with(authenticationFor(Member.Role.USER)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("A004"));
+                .andExpect(jsonPath("$.error.code").value("A004"));
         verifyNoInteractions(memberPromotionService);
         verify(auditLogService).record(7L, AdminAuditLog.Action.ROLE_CHANGE,
                 "Member", 12L, AdminAuditLog.Result.DENIED);

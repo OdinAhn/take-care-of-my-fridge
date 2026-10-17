@@ -105,14 +105,14 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("AUTH_002"));
+                .andExpect(jsonPath("$.error.code").value("AUTH_002"));
     }
 
     @Test
     void protectedRequestWithoutAccessCookieReturnsJsonUnauthorized() throws Exception {
         mvc.perform(get("/api/members/me"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("A003"));
+                .andExpect(jsonPath("$.error.code").value("A003"));
     }
 
     @Test
@@ -145,7 +145,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nickname\":\" 새닉네임 \"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("SUCCESS"));
+                .andExpect(jsonPath("$.success").value(true));
 
         verify(memberService).changeNickname(eq(7L),
                 argThat(request -> "새닉네임".equals(request.nickname())));
@@ -196,7 +196,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nickname\":\"중복닉네임\"}"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("M002"));
+                .andExpect(jsonPath("$.error.code").value("M002"));
     }
 
     @Test
@@ -213,7 +213,7 @@ class MemberControllerTest {
     void invalidEmailFormatIsRejectedBeforeCallingService() throws Exception {
         mvc.perform(get("/api/members/email-availability").param("email", "not-an-email"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()));
+                .andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()));
 
         verifyNoInteractions(memberService);
     }
@@ -263,7 +263,7 @@ class MemberControllerTest {
     void blankNicknameIsRejectedBeforeCallingService() throws Exception {
         mvc.perform(get("/api/members/nickname-availability").param("nickname", "   "))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()));
+                .andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()));
 
         verifyNoInteractions(memberService);
     }
@@ -294,7 +294,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"currentPassword\":\"Oldpassword1!\",\"newPassword\":\"Newpassword1!\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("SUCCESS"));
+                .andExpect(jsonPath("$.success").value(true));
 
         verify(memberService).changePassword(7L, 8L, "Oldpassword1!", "Newpassword1!");
     }
@@ -362,11 +362,11 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"currentPassword\":\"Wrongpassword1!\",\"newPassword\":\"Newpassword1!\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("M003"));
+                .andExpect(jsonPath("$.error.code").value("M003"));
     }
 
     @Test
-    void changeTastesAcceptsDuplicateValuesAndEmptyList() throws Exception {
+    void changeTastesPassesRequestedListToService() throws Exception {
         var auth = authentication(new UsernamePasswordAuthenticationToken(
                 new AuthSessionService.AuthPrincipal(7L, 8L, Member.Role.USER), null,
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))));
@@ -375,7 +375,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tastes\":[\"SWEET\",\"SWEET\",\"SPICY\"]}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("SUCCESS"));
+                .andExpect(jsonPath("$.success").value(true));
         verify(memberService).changeTastes(eq(7L), argThat(request ->
                 request.equals(List.of(Member.Taste.SWEET, Member.Taste.SWEET, Member.Taste.SPICY))));
 

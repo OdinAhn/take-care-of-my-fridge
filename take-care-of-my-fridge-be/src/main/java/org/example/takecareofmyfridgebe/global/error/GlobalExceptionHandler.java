@@ -38,16 +38,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 읽을 수 없는 JSON 요청 본문
-     */
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(
-            HttpMessageNotReadableException e) {
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ErrorCode.INVALID_INPUT_VALUE, "요청 본문 형식이 올바르지 않습니다."));
-    }
-
-    /**
      * DTO 검증 실패 (@Valid) 예외 처리
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)

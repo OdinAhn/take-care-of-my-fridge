@@ -36,21 +36,21 @@ class AdminAccessSecurityTest {
     void anonymousRequestIsUnauthorized() throws Exception {
         mvc.perform(get("/api/admin/probe"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("A003"));
+                .andExpect(jsonPath("$.error.code").value("A003"));
     }
 
     @Test
     void userRequestIsForbidden() throws Exception {
         mvc.perform(get("/api/admin/probe").with(authentication(authenticationFor(Member.Role.USER))))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("A004"));
+                .andExpect(jsonPath("$.error.code").value("A004"));
     }
 
     @Test
     void adminRequestIsAllowed() throws Exception {
         mvc.perform(get("/api/admin/probe").with(authentication(authenticationFor(Member.Role.ADMIN))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("SUCCESS"));
+                .andExpect(jsonPath("$.success").value(true));
     }
 
     private UsernamePasswordAuthenticationToken authenticationFor(Member.Role role) {

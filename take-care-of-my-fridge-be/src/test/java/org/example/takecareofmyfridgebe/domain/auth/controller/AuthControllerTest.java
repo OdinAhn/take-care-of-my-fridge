@@ -108,13 +108,13 @@ class AuthControllerTest {
                                 {"email":"cook@example.com","password":"wrong"}
                                 """))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("A001"));
+                .andExpect(jsonPath("$.error.code").value("A001"));
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"email":"cook@example.com","password":"password"}
                                 """))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("A002"));
+                .andExpect(jsonPath("$.error.code").value("A002"));
     }
 
     @Test
@@ -140,7 +140,7 @@ class AuthControllerTest {
                 .andExpect(status().isForbidden());
         mvc.perform(post("/api/auth/refresh").with(csrf()))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("A005"));
+                .andExpect(jsonPath("$.error.code").value("A005"));
 
         verifyNoInteractions(refreshService);
     }
@@ -154,7 +154,7 @@ class AuthControllerTest {
                         .with(csrf())
                         .cookie(new Cookie("refresh_token", "invalid")))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("A005"));
+                .andExpect(jsonPath("$.error.code").value("A005"));
     }
 
     @Test
