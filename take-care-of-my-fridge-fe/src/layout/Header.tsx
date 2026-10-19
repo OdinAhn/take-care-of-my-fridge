@@ -1,7 +1,7 @@
 import { MenuOutlined, SearchOutlined } from '@ant-design/icons';
 import { Badge, Button, Drawer, Flex, Grid, Input, Layout, Typography } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { ROUTES } from '@/app/paths';
 import { NotificationBell } from '@/domains/notification/components/NotificationBell';
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
 ] as const;
 
 export function Header() {
+  const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -48,7 +49,12 @@ export function Header() {
 
         <nav className={styles.desktopNav} aria-label="주요 메뉴">
           {NAV_ITEMS.map((item) => (
-            <Button key={item.key} type="text" className={styles.navButton}>
+            <Button
+              key={item.key}
+              type="text"
+              className={styles.navButton}
+              onClick={item.key === 'mypage' ? () => navigate(ROUTES.login) : undefined}
+            >
               <Flex align="center" gap="small">
                 <span>{item.label}</span>
                 {'badgeCount' in item && <Badge count={item.badgeCount} size="small" />}
@@ -89,7 +95,10 @@ export function Header() {
                 key={item.key}
                 type="text"
                 block
-                onClick={handleCloseDrawer}
+                onClick={() => {
+                  handleCloseDrawer();
+                  if (item.key === 'mypage') navigate(ROUTES.login);
+                }}
                 className={styles.drawerNavButton}
               >
                 <Flex align="center" justify="space-between" className={styles.drawerNavInner}>
