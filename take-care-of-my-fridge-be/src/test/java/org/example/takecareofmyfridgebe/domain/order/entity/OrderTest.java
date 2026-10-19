@@ -46,11 +46,13 @@ class OrderTest {
     void confirmWorksOnlyAfterPaid() {
         Order order = newOrder();
 
-        assertThatThrownBy(order::confirm).isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> order.confirm(LocalDateTime.now())).isInstanceOf(BusinessException.class);
 
         order.markPaid(LocalDateTime.now());
-        order.confirm();
+        LocalDateTime now = LocalDateTime.of(2026, 10, 20, 6, 0);
+        order.confirm(now);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(order.getConfirmedAt()).isEqualTo(now);
     }
 }

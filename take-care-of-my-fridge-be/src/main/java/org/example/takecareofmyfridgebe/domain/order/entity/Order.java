@@ -63,6 +63,10 @@ public class Order extends BaseTimeEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    // 구매 확정 일시 (확정 전에는 null)
+    @Column(name = "confirmed_at")
+    private LocalDateTime confirmedAt;
+
     @Builder
     private Order(String orderNumber, Long memberId, long totalAmount) {
         this.orderNumber = orderNumber;
@@ -86,10 +90,11 @@ public class Order extends BaseTimeEntity {
         this.status = OrderStatus.CANCELLED;
     }
 
-    public void confirm() {
+    public void confirm(LocalDateTime confirmedAt) {
         if (status != OrderStatus.PAID) {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
         this.status = OrderStatus.CONFIRMED;
+        this.confirmedAt = confirmedAt;
     }
 }
