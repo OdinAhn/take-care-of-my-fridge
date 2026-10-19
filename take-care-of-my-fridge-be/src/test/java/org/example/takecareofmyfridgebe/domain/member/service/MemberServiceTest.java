@@ -270,13 +270,16 @@ class MemberServiceTest {
     }
 
     @Test
-    void changeTastesRejectsDuplicatesWithoutChanging() {
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> memberService.changeTastes(7L,
-                        List.of(Member.Taste.SWEET, Member.Taste.SWEET, Member.Taste.SPICY)));
+    void changeTastesAcceptsDuplicatesAndStoresEachTasteOnce() {
+        Member member = Member.create("cook@example.com", "hash", "요리왕", Set.of());
+        when(memberRepository.findById(7L)).thenReturn(Optional.of(member));
 
-        assertEquals(ErrorCode.INVALID_INPUT_VALUE, exception.getErrorCode());
-        verify(memberRepository, never()).findById(any());
+        memberService.changeTastes(7L,
+                List.of(Member.Taste.SWEET, Member.Taste.SWEET, Member.Taste.SPICY));
+
+        assertEquals(2, member.getTastes().size());
+        assertEquals(Set.of(Member.Taste.SWEET, Member.Taste.SPICY),
+                Set.copyOf(member.getTastes().stream().map(MemberTaste::getTaste).toList()));
     }
 
     @Test
