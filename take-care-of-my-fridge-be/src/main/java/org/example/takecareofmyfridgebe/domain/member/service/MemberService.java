@@ -83,8 +83,7 @@ public class MemberService {
 
     @Transactional
     public void changeTastes(Long memberId, List<Member.Taste> tastes) {
-        Set<Member.Taste> uniqueTastes = toUniqueTastes(tastes);
-        getMember(memberId).replaceTastes(uniqueTastes);
+        getMember(memberId).replaceTastes(new HashSet<>(tastes));
     }
 
     @Transactional
