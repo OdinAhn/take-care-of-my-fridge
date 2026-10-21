@@ -60,10 +60,13 @@ class ProductTest {
     @Test
     @DisplayName("재고가 0이면 품절, 모자라면 재고 부족 문구에 상품명을 담는다")
     void decreaseStock_messageIncludesName() {
-        assertThatThrownBy(() -> productWithStock(0).decreaseStock(1))
+        Product soldOut = productWithStock(0);
+        Product lowStock = productWithStock(2);
+
+        assertThatThrownBy(() -> soldOut.decreaseStock(1))
             .isInstanceOf(BusinessException.class)
             .hasMessage("품절 · 대파");
-        assertThatThrownBy(() -> productWithStock(2).decreaseStock(3))
+        assertThatThrownBy(() -> lowStock.decreaseStock(3))
             .isInstanceOf(BusinessException.class)
             .hasMessage("재고 부족 · 대파");
     }
