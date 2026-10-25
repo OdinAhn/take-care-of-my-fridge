@@ -5638,6 +5638,9 @@
             "type": "integer",
             "format": "int64"
           },
+          "recipeName": {
+            "type": "string"
+          },
           "updatedAt": {
             "type": "string",
             "format": "date-time"
