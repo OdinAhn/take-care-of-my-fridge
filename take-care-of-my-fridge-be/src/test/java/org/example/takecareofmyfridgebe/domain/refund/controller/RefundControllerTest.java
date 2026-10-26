@@ -9,6 +9,8 @@ import org.example.takecareofmyfridgebe.domain.refund.dto.RefundCreateRequest;
 import org.example.takecareofmyfridgebe.domain.refund.dto.RefundHistoryItemResponse;
 import org.example.takecareofmyfridgebe.domain.refund.dto.RefundHistoryResponse;
 import org.example.takecareofmyfridgebe.domain.refund.dto.RefundResponse;
+import org.example.takecareofmyfridgebe.domain.refund.dto.RefundSummaryResponse;
+import org.example.takecareofmyfridgebe.domain.refund.dto.RefundSummaryStatus;
 import org.example.takecareofmyfridgebe.domain.refund.dto.RefundableItemResponse;
 import org.example.takecareofmyfridgebe.domain.refund.entity.RefundReasonType;
 import org.example.takecareofmyfridgebe.domain.refund.entity.RefundStatus;
@@ -35,6 +37,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -278,6 +282,62 @@ class RefundControllerTest {
                 .andExpect(jsonPath("$.data[0].items[0].amount").value(6000));
 
         verify(refundQueryService).getRefundHistory(MEMBER_ID, 10L);
+    }
+
+    /**
+     * 비로그인 상태로 환불 요약을 조회하면 서비스를 호출하지 않고 401(A003)을 반환하는지 검증한다.
+     */
+    @Test
+    void getRefundSummariesWithoutLoginReturnsUnauthorized() throws Exception {
+        mvc.perform(get("/api/refunds/summaries").param("orderIds", "10"))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(refundQueryService);
+    }
+
+    /**
+     * 쉼표로 받은 주문 ID 목록과 토큰의 회원 ID로 서비스를 호출하고, 주문별 환불 요약이 규격대로 직렬화되는지 검증한다.
+     */
+    @Test
+    void getRefundSummariesPassesOrderIdsAndReturnsSummaries() throws Exception {
+        when(refundQueryService.getRefundSummaries(MEMBER_ID, List.of(10L, 11L))).thenReturn(List.of(
+                new RefundSummaryResponse(10L, RefundSummaryStatus.PARTIAL, 3000L),
+                new RefundSummaryResponse(11L, RefundSummaryStatus.NONE, 0L)));
+
+        mvc.perform(get("/api/refunds/summaries").param("orderIds", "10,11").with(loginUser()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].orderId").value(10))
+                .andExpect(jsonPath("$.data[0].refundStatus").value("PARTIAL"))
+                .andExpect(jsonPath("$.data[0].refundedAmount").value(3000))
+                .andExpect(jsonPath("$.data[1].refundStatus").value("NONE"));
+
+        verify(refundQueryService).getRefundSummaries(MEMBER_ID, List.of(10L, 11L));
+    }
+
+    /**
+     * 빈 값이 섞인 주문 ID 목록(orderIds=10,,11)도 500 없이 서비스로 넘어가는지 검증한다. 빈 값은 서비스가 걸러낸다.
+     */
+    @Test
+    void getRefundSummariesWithEmptyElementPassesToService() throws Exception {
+        when(refundQueryService.getRefundSummaries(eq(MEMBER_ID), any())).thenReturn(List.of());
+
+        mvc.perform(get("/api/refunds/summaries").param("orderIds", "10,,11").with(loginUser()))
+                .andExpect(status().isOk());
+
+        verify(refundQueryService).getRefundSummaries(eq(MEMBER_ID), argThat(ids -> ids.containsAll(List.of(10L, 11L))));
+    }
+
+    /**
+     * 서비스가 REFUND_013으로 거절하면 400과 해당 오류 코드로 응답하는지 검증한다. 1~50건 범위 판단은 서비스 테스트가 맡는다.
+     */
+    @Test
+    void getRefundSummariesBusinessExceptionReturnsErrorCode() throws Exception {
+        when(refundQueryService.getRefundSummaries(MEMBER_ID, List.of(10L)))
+                .thenThrow(new BusinessException(ErrorCode.INVALID_REFUND_SUMMARY_REQUEST));
+
+        mvc.perform(get("/api/refunds/summaries").param("orderIds", "10").with(loginUser()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REFUND_SUMMARY_REQUEST.getCode()));
     }
 
     private static RequestPostProcessor loginUser() {
