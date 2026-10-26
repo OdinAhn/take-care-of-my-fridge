@@ -1878,6 +1878,38 @@
         ]
       }
     },
+    "/api/recipes/popular": {
+      "get": {
+        "operationId": "getPopularRecipes",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 6
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListPopularRecipeResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "popular-recipe-controller"
+        ]
+      }
+    },
     "/api/recipes/{recipeId}": {
       "get": {
         "operationId": "getRecipe",
@@ -2486,6 +2518,23 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FridgeItemResponse"
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseListPopularRecipeResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PopularRecipeResponse"
             }
           },
           "error": {
@@ -5110,6 +5159,36 @@
             "type": "string"
           },
           "portonePaymentId": {
+            "type": "string"
+          }
+        }
+      },
+      "PopularRecipeResponse": {
+        "type": "object",
+        "properties": {
+          "averageRating": {
+            "type": "number",
+            "format": "double"
+          },
+          "cookedMemberCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "recipeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "recipeName": {
+            "type": "string"
+          },
+          "reviewCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tipSummary": {
             "type": "string"
           }
         }
