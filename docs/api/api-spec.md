@@ -195,6 +195,196 @@ HTTP 메서드·경로·DTO 이름은 구현 전 합의합니다.
 - **레시피 존재 검증**: 후기 작성 시 레시피 존재 여부를 `RecipeService.existsById`로 확인하며, 미존재 시 404 `RECIPE_NOT_FOUND`를 반환합니다.
 - **본인 후기 검증**: 후기 수정 및 삭제는 작성자 본인만 가능하며, 타인의 후기이거나 존재하지 않는 후기인 경우 404 `REVIEW_NOT_FOUND`로 통일하여 존재 여부를 노출하지 않습니다.
 
+## 장바구니 API
+
+상태: **구현 완료** · 담당: 장준혁 · 근거: 실제 백엔드 컨트롤러 및 서비스 구현
+
+경로는 prefix(/api)를 뺀 값입니다. 회원 번호는 로그인 정보에서만 읽고 요청에는 받지 않습니다.
+
+| 기능 | Method / Path | 권한 | 성공 응답 |
+|---|---|---|---|
+| 장바구니 담기 | POST /cart-items | 로그인 | 새 항목 201, 수량만 더하면 200 |
+| 장바구니 조회 | GET /cart-items | 로그인 | 200 |
+| 수량 변경 | PATCH /cart-items/{cartItemId} | 로그인 | 200 |
+| 항목 삭제 | DELETE /cart-items | 로그인 | 200 |
+
+요청 값입니다.
+
+| 기능 | 위치 | 이름 | 설명 |
+|---|---|---|---|
+| 장바구니 담기 | Body | productId | 담을 상품. 필수 |
+| 장바구니 담기 | Body | quantity | 담을 수량. 1 이상, 생략하면 1 |
+| 수량 변경 | Path | cartItemId | 바꿀 항목 |
+| 수량 변경 | Body | quantity | 바꿀 수량. 1 이상, 필수 |
+| 항목 삭제 | Query | cartItemIds | 지울 항목 번호. 1개 이상 |
+
+응답 데이터입니다.
+
+| 기능 | 응답 | 필드 |
+|---|---|---|
+| 장바구니 담기 | AddCartItemResponse | productId, quantity |
+| 장바구니 조회 | CartItemsResponse | items(담은 순서) |
+| 수량 변경 | ChangeCartItemQuantityResponse | cartItemId, quantity |
+| 항목 삭제 | 공통 성공 응답 | 없음 |
+
+오류입니다. 401은 모든 기능에 공통입니다.
+
+| 기능 | HTTP | 코드 | 조건 |
+|---|---|---|---|
+| 장바구니 담기 | 400 | 공통 | 상품 번호가 없거나 수량이 1 미만 |
+| 장바구니 담기 | 404 | `PRODUCT_001` | 상품 없음 |
+| 장바구니 담기 | 409 | `PRODUCT_005` | 판매 중지 상품 |
+| 장바구니 담기 | 409 | `CART_002` | 재고 초과 |
+| 장바구니 담기 | 409 | `CART_003` | 번개 드롭 구매 한도 초과 |
+| 수량 변경 | 400 | 공통 | 수량이 없거나 1 미만 |
+| 수량 변경 | 404 | `CART_001` | 항목 없음 또는 타인 항목 |
+| 수량 변경 | 404 | `PRODUCT_001` | 상품 없음 |
+| 수량 변경 | 409 | `PRODUCT_005` | 판매 중지 상품 |
+| 수량 변경 | 409 | `CART_002` | 재고 초과 |
+| 수량 변경 | 409 | `CART_003` | 번개 드롭 구매 한도 초과 |
+| 항목 삭제 | 400 | 공통 | cartItemIds가 없거나 비어 있거나 숫자가 아님 |
+
+조회 항목(`CartItemResponse`): cartItemId, productId, productName, imageUrl, quantity, listPrice(정가), unitPrice(지금 단가), saleType(`SPECIAL`·`FLASH_DROP`·null), discountRate, flashDropRemaining(남은 수량), flashDropLimit(한정 수량), saleEndsAt(종료 시각, +09:00 포함), soldOut(품절 여부). 할인이 없으면 saleType·discountRate·saleEndsAt은 null이고 unitPrice는 정가입니다. 번개 드롭이 아니면 flashDropRemaining·flashDropLimit은 null입니다.
+
+- **담기**: 장바구니가 없으면 만들고, 이미 담긴 상품이면 수량을 더합니다. 장바구니는 회원당 하나, 한 장바구니에 같은 상품은 하나입니다.
+- **재고 확인**: 담을 때는 기존 수량과 요청 수량의 합이 재고를 넘으면 거절합니다. 재고는 응답으로 주지 않습니다.
+- **수량 변경**: 담은 뒤 재고가 줄었어도 수량을 내리는 것은 허용하고, 현재 수량보다 올리는 것은 재고까지만 허용합니다.
+- **번개 드롭 한도**: 진행 중인 번개 드롭 상품은 1인 1개라 합친 수량이 1을 넘으면 `CART_003`으로 거절합니다.
+- **할인 조회**: 조회할 때 진행 중인 할인을 한 번에 읽어 항목마다 단가를 붙입니다. 장바구니에는 할인 가격을 저장하지 않으므로 할인이 끝나면 다음 조회부터 정가가 보입니다.
+- **품절 표시**: 재고 0, 판매 중지, 번개 드롭 남은 수량 0이면 그 항목만 `soldOut=true`입니다.
+- **본인 소유 검증**: 타인의 항목이거나 없는 항목의 수량 변경은 `CART_001`(404)로 통일합니다. 삭제는 내 항목만 지우고, 남의 항목·없는 번호는 오류 없이 무시합니다. 같은 요청을 두 번 보내도 결과가 같습니다.
+- **재고를 잡지 않음**: 장바구니는 재고를 줄이거나 잡아 두지 않습니다. 재고는 주문을 만들 때 줄어듭니다.
+
+## 주문 API
+
+상태: **구현 완료** · 담당: 장준혁 · 근거: 실제 백엔드 컨트롤러 및 서비스 구현
+
+경로는 prefix(/api)를 뺀 값입니다. 회원 번호는 로그인 정보에서만 읽고 요청에는 받지 않습니다.
+
+| 기능 | Method / Path | 권한 | 성공 응답 |
+|---|---|---|---|
+| 주문하기 | POST /orders | 로그인 | 새 주문 201, 같은 키로 만든 주문 200 |
+| 주문 확인 조회 | GET /orders/{orderId}/checkout | 로그인 | 200 |
+| 주문 취소 | PATCH /orders/{orderId}/cancel | 로그인 | 200 |
+| 주문 목록 | GET /orders | 로그인 | 200 |
+| 주문 상세 | GET /orders/{orderId} | 로그인 | 200 |
+| 구매 확정 | PATCH /orders/{orderId}/confirm | 로그인 | 200 |
+
+요청 값입니다.
+
+| 기능 | 위치 | 이름 | 설명 |
+|---|---|---|---|
+| 주문하기 | Header | Idempotency-Key | 주문하기 클릭마다 만든 값. 필수, 64자 이하 |
+| 주문하기 | Body | items | 주문할 장바구니 항목. 1~50개 |
+| 주문하기 | Body | items[].cartItemId | 장바구니 항목 번호. 필수 |
+| 주문하기 | Body | items[].unitPrice | 장바구니에서 본 단가. 필수 |
+| 주문하기 | Body | items[].saleType | 장바구니에서 본 할인 구분. 할인이 없었으면 생략 |
+| 주문 확인 조회·취소·상세·구매 확정 | Path | orderId | 대상 주문 |
+| 주문 목록 | Query | page | 1부터. 기본 1 |
+| 주문 목록 | Query | size | 기본 10, 최대 100 |
+
+응답 데이터입니다.
+
+| 기능 | 응답 | 필드 |
+|---|---|---|
+| 주문하기·주문 확인 조회 | OrderCheckoutResponse | orderId, orderNumber, status, orderedAt, listPriceAmount(정가 합), discountAmount(할인 금액), payAmount(결제할 금액), items |
+| 주문 취소 | OrderCancelResponse | orderId, status |
+| 주문 목록 | PageResponse<OrderSummaryResponse> | orderId, orderNumber, orderedAt, payAmount, status |
+| 주문 상세 | OrderDetailResponse | OrderCheckoutResponse의 필드, confirmedAt(구매 확정 시각, 확정 전 null) |
+| 구매 확정 | OrderConfirmResponse | orderId, status |
+| 주문 상품(items) | OrderItemResponse | productId, productName, productImageUrl, quantity, listPrice(주문 당시 정가), unitPrice(실제 단가), lineAmount(단가 × 수량), saleType(`NONE`·`SPECIAL`·`FLASH_DROP`) |
+
+오류입니다. 401은 모든 기능에 공통입니다.
+
+| 기능 | HTTP | 코드 | 조건 |
+|---|---|---|---|
+| 주문하기 | 400 | 공통 | 키 없음·64자 초과, 항목 없음·50개 초과 |
+| 주문하기 | 404 | `CART_001` | 장바구니 항목 없음 또는 타인 항목 |
+| 주문하기 | 404 | `PRODUCT_001` | 상품 없음 |
+| 주문하기 | 409 | `PRODUCT_002` | 재고 부족·품절(번개 드롭 남은 수량 0 포함) |
+| 주문하기 | 409 | `PRODUCT_005` | 판매 중지 상품 |
+| 주문하기 | 409 | `ORDER_010` | 단가나 할인 구분이 주문 시점과 다름 |
+| 주문하기 | 409 | `CART_003` | 번개 드롭 구매 한도 초과 |
+| 주문하기 | 409 | `ORDER_006` | 같은 키로 다른 상품·수량을 보냄 |
+| 주문하기 | 409 | `ORDER_005` | 주문번호 충돌. 다시 주문 |
+| 주문 확인 조회 | 404 | `ORDER_001` | 주문 없음 또는 타인 주문 |
+| 주문 확인 조회 | 409 | `ORDER_007` | 이미 결제 완료 |
+| 주문 확인 조회 | 409 | `ORDER_008` | 취소된 주문 |
+| 주문 취소 | 404 | `ORDER_001` | 주문 없음 또는 타인 주문 |
+| 주문 취소 | 409 | `ORDER_007` | 이미 결제 완료 |
+| 주문 목록 | 400 | 공통 | page·size 범위 오류 |
+| 주문 상세 | 404 | `ORDER_001` | 주문 없음 또는 타인 주문 |
+| 구매 확정 | 404 | `ORDER_001` | 주문 없음 또는 타인 주문 |
+| 구매 확정 | 409 | `ORDER_009` | 결제 완료 전 |
+| 구매 확정 | 409 | `ORDER_008` | 취소된 주문 |
+
+- 상태 값: `PENDING`(결제 대기), `PAID`(결제 완료), `CANCELLED`(취소), `CONFIRMED`(구매 확정).
+- **재고는 주문을 만들 때 줄임**: 주문하기에서 상품 재고를 빼고, 번개 드롭은 남은 수량도 뺍니다. 하나라도 실패하면 모두 롤백됩니다. 장바구니 항목은 주문하기에서 지우지 않습니다.
+- **가격 확인**: 요청의 `unitPrice`·`saleType`이 주문 시점의 가격·할인 구분과 하나라도 다르면 오르든 내리든 `ORDER_010`으로 거절합니다. 오류 문구는 "가격 변경", "할인 시작", "할인 종료" 중 하나와 상품 이름입니다.
+- **중복 요청**: 같은 회원이 같은 `Idempotency-Key`로 다시 보내면 새 주문을 만들지 않고 처음 주문을 200으로 돌려줍니다. 상품·수량이 처음 요청과 다르면 `ORDER_006`입니다. 같은 회원의 주문하기는 장바구니 행을 잠가 하나씩 처리합니다.
+- **번개 드롭**: 1인 1개이고 이미 산 번개 드롭을 다시 주문하면 `CART_003`입니다. 남은 수량이 0이면 품절로 거절합니다.
+- **취소**: 결제 대기 주문만 취소할 수 있고, 상품 재고와 번개 드롭 남은 수량을 되돌린 뒤 번개 드롭 1인 1개 기록을 비웁니다. 이미 취소된 주문을 다시 취소하면 같은 200 응답을 주고 재고는 한 번만 돌아옵니다.
+- **구매 확정**: 결제 완료 주문만 확정하고 확정 시각을 남깁니다. 이미 확정된 주문을 다시 확정하면 같은 200 응답을 줍니다.
+- **목록**: 결제 대기·결제 완료·구매 확정 주문만 최신 주문부터 보여 주고 취소된 주문은 뺍니다. 페이지 번호는 1부터입니다.
+- **본인 소유 검증**: 타인의 주문도 없는 주문과 같은 404(`ORDER_001`)로 답합니다.
+- **주문 금액**: 주문 상품에 주문 당시 정가·단가·상품 이름·이미지를 저장하므로 상품이 바뀌어도 주문 화면의 금액은 바뀌지 않습니다.
+
+## 할인 행사 API
+
+상태: **구현 완료** · 담당: 장준혁 · 근거: 실제 백엔드 컨트롤러 및 서비스 구현
+
+경로는 prefix(/api)를 뺀 값입니다. 모두 관리자 전용입니다(일반 회원 403, 로그인 안 하면 401).
+
+| 기능 | Method / Path | 성공 응답 |
+|---|---|---|
+| 특가 등록 | POST /admin/sale-events/special | 201, `SaleEventsCreateResponse`(saleEventIds) |
+| 번개 드롭 등록 | POST /admin/sale-events/flash-drop | 201, `SaleEventsCreateResponse`(saleEventIds) |
+| 등록 후보 상품 조회 | GET /admin/sale-events/products | 200, `PageResponse<SaleCandidateProductResponse>` |
+| 할인 행사 목록 | GET /admin/sale-events | 200, `PageResponse<SaleEventListResponse>` |
+| 할인 행사 상세 | GET /admin/sale-events/{saleEventId} | 200, `SaleEventDetailResponse` |
+| 할인 행사 수정 | PATCH /admin/sale-events/{saleEventId} | 200, 공통 성공 응답 |
+| 할인 행사 종료 | PATCH /admin/sale-events/{saleEventId}/end | 200, 공통 성공 응답 |
+| 할인 행사 삭제 | DELETE /admin/sale-events/{saleEventId} | 200, 공통 성공 응답 |
+
+요청 값:
+
+| 기능 | 요청 |
+|---|---|
+| 특가 등록 | Body: `startsAt`, `endsAt`, `items`: `[{ productId, discountRate(1~99) }]` |
+| 번개 드롭 등록 | Body: 특가와 같고 항목마다 `limitedQuantity`(1 이상) 추가 |
+| 등록 후보 상품 | Query: keyword(50자 이하), type(상품 종류), page, size(최대 100) |
+| 목록 | Query: status, type, keyword, startFrom·startTo, endFrom·endTo, sort, direction(기본 DESC), page(기본 1), size(기본 10, 최대 100) |
+| 수정 | Body: `startsAt`, `endsAt`, `items`: `[{ productId, discountRate, limitedQuantity? }]` |
+
+주요 오류:
+
+| 기능 | 오류 |
+|---|---|
+| 등록 | 400 시작 시각이 지금보다 과거·종료 시각이 시작 시각보다 늦지 않음·상품 중복·할인율 범위·한정 수량이 재고보다 많음, 404 상품 없음(`PRODUCT_001`), 409 이미 행사가 있는 상품(`SALE_001`)·판매 중지·품절 상품(`PRODUCT_005`) |
+| 목록·후보 | 400 기간 순서·page·size 범위 |
+| 상세 | 404 없는 행사(`SALE_002`) |
+| 수정 | 400 입력값·상품 목록이 행사와 다름·번개 드롭 한정 수량 누락·특가에 한정 수량·한정 수량이 재고보다 많음, 404 `SALE_002`, 409 시작한 행사(`SALE_003`) |
+| 종료 | 404 `SALE_002`, 409 진행 중이 아님(`SALE_004`) |
+| 삭제 | 404 `SALE_002`, 409 시작 전이 아님(`SALE_005`) |
+
+응답 필드:
+- `SaleEventListResponse`(한 행): saleEventId, type, status, startsAt, endsAt, productId, productName, listPrice, salePrice, discountRate, limitedQuantity, remainingQuantity, soldQuantity.
+- `SaleEventDetailResponse`: saleEventId, type, status, startsAt, endsAt, items(productId, productName, listPrice, salePrice, discountRate, limitedQuantity, remainingQuantity).
+- `SaleCandidateProductResponse`: productId, productType, name, imageUrl, price, stock.
+- 종류 값: `SPECIAL`(특가), `FLASH_DROP`(번개 드롭). 상태 값: `SCHEDULED`(예정), `ACTIVE`(진행 중), `ENDED`(종료).
+
+- **상품마다 행사 하나**: 등록하면 상품마다 같은 기간의 할인 행사가 하나씩 만들어집니다. 한 상품은 예정·진행 중인 할인 행사에 하나만 들 수 있습니다. 종료된 행사에 들었던 상품과, 종료 시각이 지났지만 상태 갱신이 아직 닫지 않은 행사의 상품은 다시 등록할 수 있습니다. 한 상품이라도 거절되면 모두 저장되지 않습니다.
+- **할인가**: 정가와 할인율(1~99%)로 서버가 `정가 × (100 − 할인율) / 100`의 원 아래를 버려 계산합니다.
+- **번개 드롭**: 한정 수량을 정해 등록하면 남은 수량이 한정 수량과 같게 시작합니다. 1인 1개입니다.
+- **상태 변화**: 진행 여부는 시각(시작 ≤ 지금 < 종료)으로 판단합니다. 1분마다 도는 상태 갱신이 시작 시각이 지난 예정을 진행 중으로, 종료 시각이 지난 행사를 종료로 바꿉니다.
+- **수정**: 시작 전 할인 행사만 고칠 수 있습니다. 행사에 든 상품 목록은 그대로 보내야 하고, 번개 드롭은 한정 수량이 필수이며 특가는 한정 수량을 보내지 않습니다. 정가는 상품의 지금 정가로 다시 읽으며 번개 드롭 남은 수량은 한정 수량과 같게 다시 맞춥니다. 하나라도 거절되면 아무것도 바뀌지 않습니다.
+- **종료**: 시각상 진행 중인 할인 행사만 종료합니다(상태 갱신이 늦어 아직 예정으로 남아 있어도 시작 시각이 지났으면 종료할 수 있습니다). 상태만 종료로 바꾸고 종료 시각과 행사 항목은 그대로이며, 종료한 행사는 다시 열리지 않습니다.
+- **삭제**: 시작 전 할인 행사만 지웁니다. 행사와 행사 항목이 함께 지워집니다.
+- **동시 요청**: 수정·종료·삭제는 행사 행을 잠근 뒤 상태를 확인하므로 상태 갱신과 겹쳐도 한쪽이 끝난 뒤 처리됩니다.
+- **정가 표시**: 목록·상세의 정가는 예정·진행 중이면 상품의 현재 정가, 종료되면 행사 항목에 저장된 등록 당시 정가입니다.
+- **목록**: 상품마다 한 행으로 나옵니다. 시작·종료 날짜는 하나만 주면 그 하루로 봅니다. 정렬 기준은 상품 이름·종류·상태·정가·할인가·할인율·한정 수량·남은 수량·판매량·시작·종료이고, 정렬 기준을 주지 않으면 최신 행사 순이고, 기준이 같으면 최신 행사가 먼저입니다. 판매량은 결제 완료·구매 확정 주문의 수량만 셉니다.
+- **등록 후보 상품**: 판매 중이고 재고가 있으며 예정·진행 중인 할인 행사에 들지 않은 상품만 나옵니다.
+
 ## 엔드포인트 작성 템플릿
 
 ### <기능명>

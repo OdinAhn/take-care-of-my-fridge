@@ -104,6 +104,110 @@ erDiagram
 - 할인 후보와 행사 등록: 선택된 후보를 기존 행사 생성 서비스로 직접 등록합니다. 성공 시 deal_candidates.event_request_status를 APPROVED로 바꾸고 promotion_id에 생성된 sale_events ID를 기록합니다.
 - 예측 실행과 실적: 대상 주·입력 기준 시각·실적 확정 시각(confirmed_at)을 연결합니다.
 
+## 장바구니 테이블 관계
+
+장바구니 테이블 2개입니다. 컬럼 정의는 [데이터 사전](data-dictionary.md#carts--장바구니)에 있습니다.
+
+```mermaid
+erDiagram
+    carts ||--o{ cart_items : "담음"
+
+    carts {
+        bigint id PK
+        bigint member_id UK "외부 참조"
+    }
+    cart_items {
+        bigint id PK
+        bigint cart_id FK
+        bigint product_id "외부 참조"
+        int quantity
+    }
+```
+
+| 관계 | 의미 | 필수 여부 |
+|---|---|---|
+| carts 1 : N cart_items | 장바구니 하나에 상품 여러 개. (cart_id, product_id)는 중복 불가 | 항목에는 장바구니가 반드시 있음 |
+
+| 컬럼 | 가리키는 대상 | 소유 도메인 |
+|---|---|---|
+| carts.member_id | 장바구니 주인 | 회원 |
+| cart_items.product_id | 담은 상품 | 상품 |
+
+## 주문 테이블 관계
+
+주문 테이블 2개입니다. 컬럼 정의는 [데이터 사전](data-dictionary.md#orders--주문)에 있습니다.
+
+```mermaid
+erDiagram
+    orders ||--o{ order_items : "포함"
+
+    orders {
+        bigint id PK
+        varchar order_number UK
+        bigint member_id "외부 참조"
+        varchar idempotency_key
+        enum status
+        bigint total_amount
+    }
+    order_items {
+        bigint id PK
+        bigint order_id FK
+        bigint product_id "외부 참조"
+        int quantity
+        int list_price
+        int unit_price
+        enum sale_type
+        bigint sale_event_item_id "외부 참조"
+        bigint flash_drop_member_id "외부 참조"
+    }
+```
+
+| 관계 | 의미 | 필수 여부 |
+|---|---|---|
+| orders 1 : N order_items | 주문 하나에 주문 상품 여러 건 | 주문 상품에는 주문이 반드시 있음 |
+
+| 컬럼 | 가리키는 대상 | 소유 도메인 |
+|---|---|---|
+| orders.member_id | 주문한 회원 | 회원 |
+| order_items.product_id | 주문한 상품 | 상품 |
+| order_items.sale_event_item_id | 할인으로 샀을 때의 행사 항목 | 할인 행사 |
+| order_items.flash_drop_member_id | 번개 드롭 1인 1개 확인용 회원 | 회원 |
+
+## 할인 행사 테이블 관계
+
+할인 행사 테이블 2개입니다. 컬럼 정의는 [데이터 사전](data-dictionary.md#sale_events--할인-행사)에 있습니다.
+
+```mermaid
+erDiagram
+    sale_events ||--o{ sale_event_items : "포함"
+
+    sale_events {
+        bigint id PK
+        enum type
+        datetime starts_at
+        datetime ends_at
+        enum status
+    }
+    sale_event_items {
+        bigint id PK
+        bigint sale_event_id FK
+        bigint product_id "외부 참조"
+        int list_price
+        int sale_price
+        int discount_rate
+        int limited_quantity
+        int remaining_quantity
+    }
+```
+
+| 관계 | 의미 | 필수 여부 |
+|---|---|---|
+| sale_events 1 : N sale_event_items | 할인 행사 하나에 행사 항목 | 행사 항목에는 할인 행사가 반드시 있음 |
+
+| 컬럼 | 가리키는 대상 | 소유 도메인 |
+|---|---|---|
+| sale_event_items.product_id | 할인 상품 | 상품 |
+
 ## 확정 절차
 
 담당자·도메인 정책 확인 → 데이터 사전 → 관계 필수성·삭제 정책 → 키·인덱스 → 마이그레이션 검토. [DB 규칙](../conventions/database.md)의 미결정 항목(Q-06, Q-07)을 먼저 해결합니다.

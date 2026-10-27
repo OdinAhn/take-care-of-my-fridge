@@ -143,6 +143,94 @@
 - 기록은 수정·삭제하지 않습니다. 보관 기간은 미정입니다.
 - 미인증 요청(로그인 전)의 실패는 회원을 특정할 수 없어 이 테이블에 남기지 않습니다. 필요하면 별도 로그로 다룹니다.
 
+## carts — 장바구니
+
+- 회원당 장바구니 하나입니다. 처음 상품을 담을 때 만들고, 상품이 모두 지워져도 남깁니다.
+- 제약 이름: `uk_carts_member_id`.
+
+| 컬럼 | 타입 | NULL | 기본값 | 제약 | 의미 |
+|---|---|---|---|---|---|
+| member_id | BIGINT | 불가 | | UK | 장바구니 주인. 물리 FK 없이 회원 번호만 저장 |
+
+## cart_items — 장바구니 상품
+
+- 같은 장바구니에 같은 상품은 하나입니다. 다시 담으면 수량을 더합니다.
+- 제약 이름: FK `fk_cart_items_cart`, UK `uk_cart_items_cart_id_product_id`.
+
+| 컬럼 | 타입 | NULL | 기본값 | 제약 | 의미 |
+|---|---|---|---|---|---|
+| cart_id | BIGINT | 불가 | | FK, UK(cart_id, product_id) | 소속 장바구니 |
+| product_id | BIGINT | 불가 | | UK(cart_id, product_id) | 담은 상품. 물리 FK 없이 상품 번호만 저장 |
+| quantity | INT | 불가 | | | 담은 수량(1 이상) |
+
+- 가격·할인은 저장하지 않습니다. 조회할 때 상품의 현재 정가와 진행 중인 할인을 읽습니다.
+- 실행용 DDL 초안은 [cart.sql](cart.sql)에 있습니다.
+
+## orders — 주문
+
+- 결제 대기에서 시작해 결제 완료, 취소, 구매 확정으로 바뀝니다. 주문 한 건에 주문 상품 여러 건이 있습니다.
+- 제약 이름: UK `uk_orders_order_number`, `uk_orders_member_id_idempotency_key`. 인덱스 `idx_orders_member_id_status`(member_id, status), `idx_orders_status_created_at`(status, created_at), `idx_orders_status_paid_at`(status, paid_at).
+
+| 컬럼 | 타입 | NULL | 기본값 | 제약 | 의미 |
+|---|---|---|---|---|---|
+| order_number | VARCHAR(20) | 불가 | | UK | 주문번호. 밀리초 시각 17자리와 순번 3자리의 숫자 20자리(한국 시각) |
+| member_id | BIGINT | 불가 | | UK(member_id, idempotency_key), 인덱스 | 주문한 회원. 물리 FK 없이 회원 번호만 저장 |
+| idempotency_key | VARCHAR(64) | 허용 | NULL | UK(member_id, idempotency_key) | 주문하기 클릭마다 프론트가 만든 값. 같은 회원이 같은 값으로 다시 보내면 새 주문을 만들지 않음. 기존 주문은 NULL |
+| status | ENUM('PENDING','PAID','CANCELLED','CONFIRMED') | 불가 | 'PENDING' | 인덱스 | 결제 대기·결제 완료·취소·구매 확정 |
+| total_amount | BIGINT | 불가 | | | 결제할 금액(할인 후). 주문을 만들 때 확정 |
+| paid_at | DATETIME(6) | 허용 | NULL | | 결제 완료 시각. 결제 전에는 NULL |
+| confirmed_at | DATETIME(6) | 허용 | NULL | | 구매 확정 시각. 확정 전에는 NULL |
+
+## order_items — 주문 상품
+
+- 주문할 때의 상품 이름·이미지·가격을 복사해 저장합니다. 이후 상품이 바뀌어도 주문 화면은 이 값을 씁니다.
+- 제약 이름: UK `uk_order_items_sale_event_item_id_flash_drop_member_id`.
+
+| 컬럼 | 타입 | NULL | 기본값 | 제약 | 의미 |
+|---|---|---|---|---|---|
+| order_id | BIGINT | 불가 | | FK | 소속 주문 |
+| product_id | BIGINT | 불가 | | | 주문한 상품. 물리 FK 없이 상품 번호만 저장 |
+| product_name | VARCHAR(200) | 불가 | | | 주문 당시 상품 이름 |
+| product_image_url | VARCHAR(500) | 허용 | NULL | | 주문 당시 상품 이미지. 없으면 NULL |
+| quantity | INT | 불가 | | | 주문 수량 |
+| list_price | INT | 불가 | | | 주문 당시 정가(원) |
+| unit_price | INT | 불가 | | | 실제 단가(원). 할인 중이면 할인가, 아니면 정가 |
+| sale_type | ENUM('NONE','SPECIAL','FLASH_DROP') | 불가 | | | 주문 당시 할인 구분 |
+| sale_event_item_id | BIGINT | 허용 | NULL | | 할인으로 샀을 때의 행사 항목. 일반 상품은 NULL. 물리 FK 없음 |
+| flash_drop_member_id | BIGINT | 허용 | NULL | UK(sale_event_item_id, flash_drop_member_id) | 번개 드롭 1인 1개 확인용 회원. 번개 드롭 항목에만 값이 있고 주문을 취소하면 NULL |
+
+- 같은 행사 항목에 같은 회원은 한 번만 들어갈 수 있습니다(번개 드롭 1인 1개). NULL은 여러 건 가능합니다.
+
+## sale_events — 할인 행사
+
+- 상품 하나에 대한 한 번의 할인 기간입니다. 등록하면 상품마다 한 건씩 만들어지고, 예정에서 진행 중, 종료로 바뀝니다.
+- 제약 이름: 인덱스 `idx_sale_events_status_starts_at`(status, starts_at), `idx_sale_events_status_ends_at`(status, ends_at).
+
+| 컬럼 | 타입 | NULL | 기본값 | 제약 | 의미 |
+|---|---|---|---|---|---|
+| type | ENUM('SPECIAL','FLASH_DROP') | 불가 | | | 특가·번개 드롭 |
+| starts_at | DATETIME(6) | 불가 | | 인덱스 | 시작 시각(한국 시각) |
+| ends_at | DATETIME(6) | 불가 | | 인덱스 | 종료 시각. 중간에 종료해도 바뀌지 않음 |
+| status | ENUM('SCHEDULED','ACTIVE','ENDED') | 불가 | | 인덱스 | 예정·진행 중·종료 |
+
+## sale_event_items — 할인 행사 항목
+
+- 할인 행사에 든 상품과 가격입니다. 등록은 상품마다 행사를 하나씩 만들어서 지금은 행사 하나에 항목 하나입니다.
+- 제약 이름: 인덱스 `idx_sale_event_items_product_id`(product_id).
+
+| 컬럼 | 타입 | NULL | 기본값 | 제약 | 의미 |
+|---|---|---|---|---|---|
+| sale_event_id | BIGINT | 불가 | | FK | 소속 할인 행사 |
+| product_id | BIGINT | 불가 | | 인덱스 | 할인 상품. 물리 FK 없이 상품 번호만 저장 |
+| list_price | INT | 불가 | | | 등록(수정) 때 읽은 정가(원). 종료된 행사의 정가 표시에 씀 |
+| sale_price | INT | 불가 | | | 할인가(원). 정가 × (100 − 할인율) / 100의 원 아래 버림 |
+| discount_rate | INT | 불가 | | | 할인율(1~99) |
+| limited_quantity | INT | 허용 | NULL | | 번개 드롭 한정 수량. 특가는 NULL |
+| remaining_quantity | INT | 허용 | NULL | | 번개 드롭 남은 수량. 특가는 NULL. 주문하면 줄고 취소하면 한정 수량까지 늘어남 |
+
+- 번개 드롭 1인 1개는 `order_items`의 UK(sale_event_item_id, flash_drop_member_id)가 막습니다.
+- 실행용 DDL 초안은 [sale-event.sql](sale-event.sql)에 있습니다.
+
 ## 다른 도메인에 요청할 컬럼
 
 | 도메인 | 필요한 데이터 | 근거 |
