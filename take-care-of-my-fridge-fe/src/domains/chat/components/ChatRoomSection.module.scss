@@ -1,0 +1,233 @@
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--ant-color-bg-container);
+  overflow: hidden;
+  position: relative;
+}
+
+// 1. 헤더 (고정)
+.chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  background-color: var(--ant-color-bg-container);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.closeButton {
+  color: var(--ant-color-text-secondary);
+  font-size: 14px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--ant-color-text);
+  }
+}
+
+// 2. 상태 배너 (고정)
+.statusBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  background-color: var(--ant-color-fill-quaternary);
+  font-size: 11.5px;
+  flex-shrink: 0;
+  z-index: 9;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ant-color-text-secondary);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &.active {
+    background-color: #52c41a;
+    animation: pulse 1.8s infinite;
+  }
+
+  &.ended {
+    background-color: var(--ant-color-text-quaternary);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+// 3. 메시지 영역 (스크롤)
+.messageAreaWrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.messageArea {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--ant-color-bg-layout);
+}
+
+.emptyArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--ant-color-text-secondary);
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.scrollBottomButton {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background-color: var(--ant-color-bg-elevated);
+  border: 1px solid var(--ant-color-border-secondary);
+  color: var(--ant-color-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--ant-color-primary-bg);
+    border-color: var(--ant-color-primary);
+  }
+}
+
+// 4. 하단 입력 영역 (고정)
+.inputArea {
+  border-top: 1px solid var(--ant-color-border-secondary);
+  background-color: var(--ant-color-bg-container);
+  padding: 8px 12px 10px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sendErrorBanner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+  font-size: 11.5px;
+  animation: fadeIn 0.15s ease-in;
+}
+
+.errorDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #ff4d4f;
+  flex-shrink: 0;
+}
+
+.inputForm {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.singleInput {
+  flex: 1;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.counterRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 3px;
+  font-size: 10.5px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.loginPrompt {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.loginPromptBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

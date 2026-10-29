@@ -8,6 +8,8 @@ apis/admin-recipe-controller-api.ts
 apis/admin-sale-event-controller-api.ts
 apis/auth-controller-api.ts
 apis/cart-controller-api.ts
+apis/chat-message-controller-api.ts
+apis/chat-session-controller-api.ts
 apis/cooking-log-controller-api.ts
 apis/cooking-stats-controller-api.ts
 apis/csrf-controller-api.ts
@@ -34,6 +36,7 @@ models/admin-product-list-request.ts
 models/api-response-add-cart-item-response.ts
 models/api-response-cart-items-response.ts
 models/api-response-change-cart-item-quantity-response.ts
+models/api-response-chat-session-response.ts
 models/api-response-cooking-complete-response.ts
 models/api-response-cooking-log-response.ts
 models/api-response-cooking-stats-response.ts
@@ -45,6 +48,7 @@ models/api-response-email-availability-response.ts
 models/api-response-forecast-response.ts
 models/api-response-fridge-item-response.ts
 models/api-response-fridge-item-take-out-response.ts
+models/api-response-list-chat-message-response.ts
 models/api-response-list-fridge-item-response.ts
 models/api-response-list-popular-recipe-response.ts
 models/api-response-list-refund-history-response.ts
@@ -88,6 +92,9 @@ models/change-cart-item-quantity-response.ts
 models/change-nickname-request.ts
 models/change-password-request.ts
 models/change-tastes-request.ts
+models/chat-message-create-request.ts
+models/chat-message-response.ts
+models/chat-session-response.ts
 models/cooking-complete-request.ts
 models/cooking-complete-response.ts
 models/cooking-log-response.ts

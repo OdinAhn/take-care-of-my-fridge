@@ -1,6 +1,7 @@
 import { Button, Flex, Tag, Typography } from 'antd';
 
 import { SectionCard } from '@/common/components/SectionCard';
+import { useChatModalStore } from '@/domains/chat/model/useChatModalStore';
 
 import { formatDDay } from '../format';
 import { useFridgeSort } from '../hooks/useFridgeSort';
@@ -8,6 +9,7 @@ import { useFridgeItems } from '../queries';
 import styles from './FridgeAiConsultSection.module.scss';
 
 export function FridgeAiConsultSection() {
+  const openChat = useChatModalStore((state) => state.openChat);
   const [sort] = useFridgeSort();
   const { data } = useFridgeItems(sort, true);
   const imminentItems = data?.filter((item) => item.status === 'IMMINENT') ?? [];
@@ -30,8 +32,7 @@ export function FridgeAiConsultSection() {
         <Typography.Text type="secondary" className={styles.hint}>
           목록에서 재료를 골라 추천받을 수도 있어요.
         </Typography.Text>
-        {/* TODO: AI 상담 기능이 생기면 상담 화면으로 연결한다. */}
-        <Button type="primary" size="large" block>
+        <Button type="primary" size="large" onClick={openChat} block>
           AI 상담 시작하기
         </Button>
       </Flex>
