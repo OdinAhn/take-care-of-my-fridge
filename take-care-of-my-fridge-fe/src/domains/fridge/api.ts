@@ -1,6 +1,5 @@
 import { axiosInstance } from '@/common/api/axiosInstance';
 import type { ApiResponse, PageResponse } from '@/common/api/types';
-import { csrfHeaders } from '@/domains/auth/api';
 
 export type StorageType = 'REFRIGERATED' | 'FROZEN' | 'ROOM_TEMP';
 
@@ -15,11 +14,15 @@ export type FridgeRemoveReason = 'CONSUMED' | 'DISCARDED' | 'WRONG_ENTRY';
 // FridgeItemAction.java
 export type FridgeItemAction = 'CONSUMED' | 'DISCARDED';
 
+// IngredientType.java
+export type IngredientType = 'NORMAL' | 'CUSTOM' | 'MEALKIT';
+
 // FridgeItemResponse.java와 필드·enum을 맞춘다. 숫자(BigDecimal)는 number로 직렬화된다.
 export interface FridgeItemResponse {
   id: number;
   ingredientId: number | null;
   ingredientName: string | null;
+  ingredientType: IngredientType;
   baseUnit: string | null;
   rawName: string;
   quantity: number;
@@ -110,7 +113,6 @@ export async function createFridgeItems(request: FridgeItemCreateRequest) {
   const { data } = await axiosInstance.post<ApiResponse<FridgeItemResponse[]>>(
     '/api/fridge/items',
     request,
-    { headers: await csrfHeaders() },
   );
   return data.data;
 }
@@ -119,7 +121,6 @@ export async function updateFridgeItem(fridgeId: number, request: FridgeItemUpda
   const { data } = await axiosInstance.patch<ApiResponse<FridgeItemResponse>>(
     `/api/fridge/items/${encodeURIComponent(fridgeId)}`,
     request,
-    { headers: await csrfHeaders() },
   );
   return data.data;
 }
@@ -128,7 +129,6 @@ export async function takeOutFridgeItem(fridgeId: number, request: FridgeItemTak
   const { data } = await axiosInstance.post<ApiResponse<FridgeItemTakeOutResponse>>(
     `/api/fridge/items/${encodeURIComponent(fridgeId)}/take-out`,
     request,
-    { headers: await csrfHeaders() },
   );
   return data.data;
 }
@@ -136,6 +136,5 @@ export async function takeOutFridgeItem(fridgeId: number, request: FridgeItemTak
 export async function removeFridgeItem(fridgeId: number, reason: FridgeRemoveReason) {
   await axiosInstance.delete(`/api/fridge/items/${encodeURIComponent(fridgeId)}`, {
     params: { reason },
-    headers: await csrfHeaders(),
   });
 }
