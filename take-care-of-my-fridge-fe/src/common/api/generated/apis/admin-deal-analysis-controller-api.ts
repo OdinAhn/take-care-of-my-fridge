@@ -77,6 +77,35 @@ export const AdminDealAnalysisControllerApiAxiosParamCreator = function (configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getDemo1: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/admin/deal-analyses/demo`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getLatest1: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/admin/deal-analyses/latest`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -237,6 +266,17 @@ export const AdminDealAnalysisControllerApiFp = function(configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getDemo1(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiResponseDealAnalysisResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getDemo1(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AdminDealAnalysisControllerApi.getDemo1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getLatest1(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiResponseDealAnalysisResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getLatest1(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -304,6 +344,14 @@ export const AdminDealAnalysisControllerApiFactory = function (configuration?: C
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getDemo1(options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseDealAnalysisResponse> {
+            return localVarFp.getDemo1(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getLatest1(options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseDealAnalysisResponse> {
             return localVarFp.getLatest1(options).then((request) => request(axios, basePath));
         },
@@ -348,6 +396,13 @@ export interface AdminDealAnalysisControllerApiInterface {
      * @throws {RequiredError}
      */
     getById(requestParameters: AdminDealAnalysisControllerApiGetByIdRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseDealAnalysisResponse>;
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDemo1(options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseDealAnalysisResponse>;
 
     /**
      * 
@@ -426,6 +481,15 @@ export class AdminDealAnalysisControllerApi extends BaseAPI implements AdminDeal
      */
     public getById(requestParameters: AdminDealAnalysisControllerApiGetByIdRequest, options?: RawAxiosRequestConfig) {
         return AdminDealAnalysisControllerApiFp(this.configuration).getById(requestParameters.analysisId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getDemo1(options?: RawAxiosRequestConfig) {
+        return AdminDealAnalysisControllerApiFp(this.configuration).getDemo1(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

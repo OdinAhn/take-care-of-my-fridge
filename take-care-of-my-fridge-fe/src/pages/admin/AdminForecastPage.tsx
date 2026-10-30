@@ -43,15 +43,19 @@ export default function AdminForecastPage() {
   const { token } = theme.useToken();
   const [searchParams, setSearchParams] = useSearchParams();
   const weekStart = toWeekStart(searchParams.get('weekStart'));
+  const demoAvailable = import.meta.env.DEV || window.location.hostname === 'dev.imhungry.click';
+  const demo = demoAvailable && searchParams.get('demo') === '1';
   const activeTab = searchParams.get('tab') === 'result' ? 'result' : 'forecast';
   const { data, error, isPending, isError, isPlaceholderData, refetch } = useQuery(
-    forecastQueries.detail(weekStart),
+    forecastQueries.detail(weekStart, demo),
   );
 
-  const updateParams = (key: 'weekStart' | 'tab', value?: string) => {
+  const updateParams = (key: 'weekStart' | 'tab' | 'demo', value?: string) => {
     const next = new URLSearchParams(searchParams);
     if (value) next.set(key, value);
     else next.delete(key);
+    if (key === 'weekStart') next.delete('demo');
+    if (key === 'demo') next.delete('weekStart');
     setSearchParams(next);
   };
 
@@ -67,6 +71,11 @@ export default function AdminForecastPage() {
           onChange={(date) => updateParams('weekStart', date?.format('YYYY-MM-DD'))}
         />
         <Button onClick={() => updateParams('weekStart')}>최신 주</Button>
+        {demoAvailable && (
+          <Button type={demo ? 'primary' : 'default'} onClick={() => updateParams('demo', '1')}>
+            시연 결과
+          </Button>
+        )}
         <Button
           disabled={isPlaceholderData || !data?.previousWeekStart}
           onClick={() => updateParams('weekStart', data?.previousWeekStart ?? undefined)}
@@ -104,7 +113,7 @@ export default function AdminForecastPage() {
             <Alert
               type="warning"
               showIcon
-              message="가상 데이터를 사용한 예측입니다."
+              message="시연용 예측·실적 수치입니다. 실제 모델의 예측 결과가 아닙니다."
               className={styles.notice}
             />
           )}

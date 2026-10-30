@@ -65,6 +65,26 @@
         ]
       }
     },
+    "/api/admin/deal-analyses/demo": {
+      "get": {
+        "operationId": "getDemo_1",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDealAnalysisResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "admin-deal-analysis-controller"
+        ]
+      }
+    },
     "/api/admin/deal-analyses/latest": {
       "get": {
         "operationId": "getLatest_1",
@@ -195,6 +215,26 @@
         },
         "tags": [
           "admin-deal-analysis-controller"
+        ]
+      }
+    },
+    "/api/admin/forecasts/demo": {
+      "get": {
+        "operationId": "getDemo",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseForecastResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "admin-forecast-controller"
         ]
       }
     },

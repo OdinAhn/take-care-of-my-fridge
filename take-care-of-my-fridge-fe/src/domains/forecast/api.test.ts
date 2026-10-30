@@ -31,6 +31,11 @@ describe('getForecast', () => {
     expect(adapter.mock.calls[0][0].url).toBe('/api/admin/forecasts/latest');
   });
 
+  it('시연 예측은 전용 결과를 읽는다', async () => {
+    await getForecast(undefined, undefined, true);
+    expect(adapter.mock.calls[0][0].url).toBe('/api/admin/forecasts/demo');
+  });
+
   it('고른 주의 예측을 읽는다', async () => {
     await getForecast('2026-11-02');
     expect(adapter.mock.calls[0][0].url).toBe('/api/admin/forecasts/2026-11-02');

@@ -49,6 +49,11 @@ public class AdminDealAnalysisController {
         return ResponseEntity.ok(ApiResponse.ok(readService.getLatestForMember(principal.memberId())));
     }
 
+    @GetMapping("/demo")
+    public ResponseEntity<ApiResponse<DealAnalysisResponse>> getDemo() {
+        return ResponseEntity.ok(ApiResponse.ok(readService.getDemo()));
+    }
+
     @GetMapping("/{analysisId}")
     public ResponseEntity<ApiResponse<DealAnalysisResponse>> getById(@PathVariable Long analysisId) {
         return ResponseEntity.ok(ApiResponse.ok(readService.getById(analysisId)));
