@@ -46,6 +46,8 @@ export function CartItemRow({
   const detailPath = generatePath(ROUTES.productDetail, { productId: String(item.productId) });
   const maxQuantity = item.saleType === 'FLASH_DROP' ? FLASH_DROP_PURCHASE_LIMIT : undefined;
   const canIncrease = maxQuantity === undefined || quantity < maxQuantity;
+  // 담아 둔 뒤 번개 드롭으로 바뀌었으면 한 번에 구매 한도까지 내린다.
+  const decreasedQuantity = maxQuantity ?? quantity - 1;
   const [draft, setDraft] = useState<number | null>(quantity);
   const [syncedQuantity, setSyncedQuantity] = useState(quantity);
   // 변경이 반영되거나 실패해서 수량이 바뀌면 입력칸도 그 값으로 맞춘다.
@@ -96,7 +98,7 @@ export function CartItemRow({
           aria-label={`${item.productName} 수량 빼기`}
           disabled={soldOut || quantity <= 1}
           className={styles.stepButton}
-          onClick={() => onChangeQuantity(quantity - 1)}
+          onClick={() => onChangeQuantity(decreasedQuantity)}
         />
         <InputNumber
           min={1}
