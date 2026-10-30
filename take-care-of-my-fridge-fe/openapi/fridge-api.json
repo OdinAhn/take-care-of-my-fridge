@@ -1900,6 +1900,24 @@
       }
     },
     "/api/notifications": {
+      "delete": {
+        "operationId": "deleteAll",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      },
       "get": {
         "operationId": "getMyNotifications",
         "parameters": [
@@ -1918,24 +1936,6 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseNotificationListResponse"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "notification-controller"
-        ]
-      },
-      "delete": {
-        "operationId": "deleteAll",
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseVoid"
                 }
               }
             },
