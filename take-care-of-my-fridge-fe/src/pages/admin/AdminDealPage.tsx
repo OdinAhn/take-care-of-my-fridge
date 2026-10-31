@@ -159,7 +159,7 @@ export default function AdminDealPage() {
   );
   const demoToggle = demoAvailable && (
     <Button onClick={() => setSearchParams(demo ? {} : { demo: '1' })}>
-      {demo ? '최근 분석 보기' : '시연 결과 보기'}
+      {demo ? '최근 분석 보기' : '임의 할인 이벤트 추천 보기'}
     </Button>
   );
 
