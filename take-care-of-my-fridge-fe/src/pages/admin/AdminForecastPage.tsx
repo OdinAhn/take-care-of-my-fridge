@@ -70,7 +70,12 @@ export default function AdminForecastPage() {
           disabledDate={(date) => date.day() !== 1}
           onChange={(date) => updateParams('weekStart', date?.format('YYYY-MM-DD'))}
         />
-        <Button onClick={() => updateParams('weekStart')}>최신 주</Button>
+        <Button
+          type={!demo && !weekStart ? 'primary' : 'default'}
+          onClick={() => updateParams('weekStart')}
+        >
+          최신 주
+        </Button>
         {demoAvailable && (
           <Button type={demo ? 'primary' : 'default'} onClick={() => updateParams('demo', '1')}>
             시연 결과
@@ -96,7 +101,15 @@ export default function AdminForecastPage() {
         </div>
       ) : isError ? (
         getErrorCode(error) === 'F001' ? (
-          <Empty description="해당 주의 판매 예측이 없습니다." />
+          <Empty
+            description={
+              demo
+                ? '시연 예측이 없습니다.'
+                : weekStart
+                  ? '해당 주의 실제 판매 예측이 없습니다.'
+                  : '실제 판매 예측이 아직 없습니다.'
+            }
+          />
         ) : (
           <Result
             status="error"
