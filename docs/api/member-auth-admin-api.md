@@ -397,7 +397,7 @@
   "createdAt": "2026-10-04T22:00:00",
   "confirmed": true,
   "confirmedAt": "2026-10-12T06:00:00",
-  "syntheticData": true,
+  "syntheticData": false,
   "previousWeekStart": "2026-09-28",
   "nextWeekStart": "2026-10-12",
   "summary": {
@@ -428,7 +428,7 @@
 | 필드 | 설명 |
 |---|---|
 | confirmed | false면 실제 판매량이 아직 없음(A-04). `summary`와 `actual*`, `rankChange`, `qtyError`, `status`는 null |
-| previousWeekStart / nextWeekStart | 예측이 있는 이전·다음 주. 없으면 null(화면의 ‹ › 버튼 비활성) |
+| previousWeekStart / nextWeekStart | 실제 예측이 있는 이전·다음 주. 없으면 null(화면의 ‹ › 버튼 비활성) |
 | summary.meanAbsoluteError | 예상 TOP 10 상품의 \|예상 − 실제\| 평균 |
 | summary.baselineMeanAbsoluteError | 같은 예상 TOP 10 상품의 \|기준선 − 실제\| 평균. 실제 판매량이 비어 있으면 0으로 계산 |
 | items | 예상 TOP 10(예상 순위순) + 실제 TOP 10에 새로 든 상품(뒤쪽, `predictedRank` null) |
@@ -448,11 +448,11 @@
 | **권한** | ADMIN |
 | **화면** | A-04 첫 진입 |
 
-**성공 응답** `200`: [5-1](#5-1-주간-예측-조회)과 같은 형식으로 가장 최근 대상 주를 돌려줍니다.
+**성공 응답** `200`: [5-1](#5-1-주간-예측-조회)과 같은 형식으로 가상 데이터를 제외한 가장 최근 대상 주를 돌려줍니다. 특정 주 조회도 실제 예측만 반환합니다.
 
 **오류**: 404 F001 예측이 하나도 없음
 
-- dev 시연 결과: `GET /admin/forecasts/demo`는 `syntheticData=true`인 저장 결과를 조회합니다. 없으면 404 F001입니다. 실제 예측 배치의 대상 주와 겹치지 않는 지난 주차에 저장합니다.
+- dev 시연 결과: `GET /admin/forecasts/demo`는 `syntheticData=true`인 저장 결과를 조회합니다. 없으면 404 F001입니다. 실제 예측 배치의 대상 주와 겹치지 않는 지난 주차에 저장합니다. 시연 응답의 이전·다음 주는 null입니다.
 
 ---
 
