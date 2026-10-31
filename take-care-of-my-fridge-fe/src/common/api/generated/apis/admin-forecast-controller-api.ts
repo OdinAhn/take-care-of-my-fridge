@@ -67,6 +67,35 @@ export const AdminForecastControllerApiAxiosParamCreator = function (configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getDemo: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/admin/forecasts/demo`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getLatest: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/admin/forecasts/latest`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -117,6 +146,17 @@ export const AdminForecastControllerApiFp = function(configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getDemo(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiResponseForecastResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getDemo(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AdminForecastControllerApi.getDemo']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getLatest(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiResponseForecastResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getLatest(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -146,6 +186,14 @@ export const AdminForecastControllerApiFactory = function (configuration?: Confi
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getDemo(options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseForecastResponse> {
+            return localVarFp.getDemo(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getLatest(options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseForecastResponse> {
             return localVarFp.getLatest(options).then((request) => request(axios, basePath));
         },
@@ -163,6 +211,13 @@ export interface AdminForecastControllerApiInterface {
      * @throws {RequiredError}
      */
     getByWeek(requestParameters: AdminForecastControllerApiGetByWeekRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseForecastResponse>;
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getDemo(options?: RawAxiosRequestConfig): AxiosPromise<ApiResponseForecastResponse>;
 
     /**
      * 
@@ -192,6 +247,15 @@ export class AdminForecastControllerApi extends BaseAPI implements AdminForecast
      */
     public getByWeek(requestParameters: AdminForecastControllerApiGetByWeekRequest, options?: RawAxiosRequestConfig) {
         return AdminForecastControllerApiFp(this.configuration).getByWeek(requestParameters.weekStart, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getDemo(options?: RawAxiosRequestConfig) {
+        return AdminForecastControllerApiFp(this.configuration).getDemo(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -452,6 +452,8 @@
 
 **오류**: 404 F001 예측이 하나도 없음
 
+- dev 시연 결과: `GET /admin/forecasts/demo`는 `syntheticData=true`인 저장 결과를 조회합니다. 없으면 404 F001입니다. 실제 예측 배치의 대상 주와 겹치지 않는 지난 주차에 저장합니다.
+
 ---
 
 ## 6. 할인 후보
@@ -487,6 +489,7 @@
 |---|---|
 | `GET /admin/deal-analyses/{analysisId}` | 특정 분석 |
 | `GET /admin/deal-analyses/latest` | 내가 마지막으로 실행한 분석(A-06 재진입). 없으면 404 D002 |
+| `GET /admin/deal-analyses/demo` | dev 시연 결과(`syntheticData=true`). 없으면 404 D002 |
 
 **성공 응답** `200` [DealAnalysis](#dealanalysis-응답-형식) · **오류**: 403 A004 · 404 D002
 

@@ -20,7 +20,7 @@ import {
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import { ROUTES } from '@/app/paths';
 import type {
@@ -56,13 +56,22 @@ const dayLabels = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금', 
 
 export default function AdminDealPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const demoAvailable = import.meta.env.DEV || window.location.hostname === 'dev.imhungry.click';
+  const demo = demoAvailable && searchParams.get('demo') === '1';
   const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm<EventFormValues>();
   const [analysisForm] = Form.useForm<AnalysisFormValues>();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const type = Form.useWatch('type', form);
-  const { data: analysis, error, isPending, isError, refetch } = useQuery(dealQueries.latest());
+  const {
+    data: analysis,
+    error,
+    isPending,
+    isError,
+    refetch,
+  } = useQuery(demo ? dealQueries.demo() : dealQueries.latest());
 
   const review = useMutation({
     mutationFn: ({
@@ -107,6 +116,7 @@ export default function AdminDealPage() {
     meta: { skipGlobalError: true },
     onSuccess: () => {
       void message.success('할인 후보 분석을 완료했습니다.');
+      setSearchParams({});
       return queryClient.invalidateQueries({ queryKey: dealQueries.all });
     },
     onError: (error) =>
@@ -147,9 +157,16 @@ export default function AdminDealPage() {
       </Form.Item>
     </Form>
   );
+  const demoToggle = demoAvailable && (
+    <Button onClick={() => setSearchParams(demo ? {} : { demo: '1' })}>
+      {demo ? '최근 분석 보기' : '시연 결과 보기'}
+    </Button>
+  );
+
   if (isPending) {
     return (
       <div className={styles.container}>
+        {demoToggle}
         {runControls}
         <Skeleton active paragraph={{ rows: 8 }} />
       </div>
@@ -159,8 +176,13 @@ export default function AdminDealPage() {
     if (getErrorCode(error) === 'D002') {
       return (
         <div className={styles.container}>
+          {demoToggle}
           {runControls}
-          <Empty description="아직 할인 후보 분석 결과가 없습니다." />
+          <Empty
+            description={
+              demo ? '시연 결과가 아직 없습니다.' : '아직 할인 후보 분석 결과가 없습니다.'
+            }
+          />
         </div>
       );
     }
@@ -179,6 +201,7 @@ export default function AdminDealPage() {
     <section className={styles.container}>
       <Space className={styles.heading}>
         <Typography.Title level={2}>할인 후보</Typography.Title>
+        {demoToggle}
         <Button onClick={() => navigate(ROUTES.adminSaleEventNew)}>행사 관리</Button>
       </Space>
       {runControls}
@@ -205,7 +228,7 @@ export default function AdminDealPage() {
         <Alert
           type="warning"
           showIcon
-          message="가상 데이터로 만든 분석 결과는 행사에 등록할 수 없습니다."
+          message="시연용 할인 수치입니다. 실제 할인 효과 모델의 계산 결과가 아니며 행사에 등록할 수 없습니다."
           className={styles.notice}
         />
       )}

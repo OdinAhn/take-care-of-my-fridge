@@ -26,6 +26,12 @@ public class ForecastReadService {
         return toResponse(run);
     }
 
+    public ForecastResponse getDemo() {
+        PredictionRun run = runRepository.findTopBySyntheticDataTrueOrderByTargetWeekStartDesc()
+                .orElseThrow(() -> new BusinessException(ErrorCode.FORECAST_NOT_FOUND));
+        return toResponse(run);
+    }
+
     public ForecastResponse getByWeek(LocalDate weekStart) {
         if (weekStart.getDayOfWeek() != DayOfWeek.MONDAY) {
             throw new IllegalArgumentException("weekStart는 월요일이어야 합니다.");

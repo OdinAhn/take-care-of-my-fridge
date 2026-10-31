@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 public interface DealAnalysisRepository extends JpaRepository<DealAnalysis, Long> {
 
     Optional<DealAnalysis> findTopByMemberIdOrderByCreatedAtDescIdDesc(Long memberId);
+    Optional<DealAnalysis> findFirstByModelVersion(String modelVersion);
+    Optional<DealAnalysis> findTopBySyntheticDataTrueOrderByCreatedAtDescIdDesc();
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select analysis from DealAnalysis analysis where analysis.id = :id")

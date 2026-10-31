@@ -13,6 +13,8 @@ import org.springframework.data.repository.query.Param;
 public interface PredictionRunRepository extends JpaRepository<PredictionRun, Long> {
 
     Optional<PredictionRun> findByTargetWeekStart(LocalDate targetWeekStart);
+    Optional<PredictionRun> findFirstByModelVersion(String modelVersion);
+    Optional<PredictionRun> findTopBySyntheticDataTrueOrderByTargetWeekStartDesc();
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from PredictionRun r where r.targetWeekStart = :weekStart")

@@ -4,10 +4,13 @@ import { unwrap } from '@/common/api/unwrap';
 export async function getForecast(
   weekStart?: string,
   signal?: AbortSignal,
+  demo = false,
 ): Promise<ForecastResponse> {
   return unwrap(
-    weekStart
-      ? adminForecastApi.getByWeek({ weekStart }, { signal })
-      : adminForecastApi.getLatest({ signal }),
+    demo
+      ? adminForecastApi.getDemo({ signal })
+      : weekStart
+        ? adminForecastApi.getByWeek({ weekStart }, { signal })
+        : adminForecastApi.getLatest({ signal }),
   );
 }

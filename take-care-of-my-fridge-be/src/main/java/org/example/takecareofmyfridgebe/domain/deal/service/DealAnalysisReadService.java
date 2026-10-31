@@ -30,6 +30,12 @@ public class DealAnalysisReadService {
         return toResponse(analysis);
     }
 
+    public DealAnalysisResponse getDemo() {
+        DealAnalysis analysis = analysisRepository.findTopBySyntheticDataTrueOrderByCreatedAtDescIdDesc()
+                .orElseThrow(() -> new BusinessException(ErrorCode.DEAL_ANALYSIS_NOT_FOUND));
+        return toResponse(analysis);
+    }
+
     private DealAnalysisResponse toResponse(DealAnalysis analysis) {
         return DealAnalysisResponse.from(analysis,
                 candidateRepository.findByDealAnalysisIdOrderByIdAsc(analysis.getId()));

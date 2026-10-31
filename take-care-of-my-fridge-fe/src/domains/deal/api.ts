@@ -12,6 +12,10 @@ export async function getLatestDealAnalysis(signal?: AbortSignal): Promise<DealA
   return unwrap(adminDealAnalysisApi.getLatest1({ signal }));
 }
 
+export async function getDemoDealAnalysis(signal?: AbortSignal): Promise<DealAnalysisResponse> {
+  return unwrap(adminDealAnalysisApi.getDemo1({ signal }));
+}
+
 export async function runDealAnalysis(
   request: DealAnalysisRunRequest,
 ): Promise<DealAnalysisResponse> {

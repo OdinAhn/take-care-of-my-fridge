@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long>, JpaSpecificationExecutor<Member> {
 
     boolean existsByRole(Member.Role role);
+    Optional<Member> findFirstByRoleOrderByIdAsc(Member.Role role);
 
     boolean existsByEmail(String email);
 
