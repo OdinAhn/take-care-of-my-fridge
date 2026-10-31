@@ -153,7 +153,7 @@ export default function AdminForecastPage() {
                   render: numberOrDash,
                 },
                 {
-                  title: '기준선 수량',
+                  title: '지난주 수량',
                   dataIndex: 'baselineQty',
                   key: 'baselineQty',
                   render: (value: number) => value.toLocaleString('ko-KR'),
@@ -177,7 +177,7 @@ export default function AdminForecastPage() {
                 <Col xs={12} md={8} lg={4}>
                   <Card size="small">
                     <Statistic
-                      title="기준선 TOP 10 일치"
+                      title="지난주 TOP 10 일치"
                       value={data.summary.baselineTop10MatchCount}
                       suffix="개"
                     />
@@ -195,7 +195,7 @@ export default function AdminForecastPage() {
                 <Col xs={12} md={8} lg={4}>
                   <Card size="small">
                     <Statistic
-                      title="기준선 MAE"
+                      title="지난주 수량 MAE"
                       value={data.summary.baselineMeanAbsoluteError}
                       precision={1}
                     />
@@ -244,7 +244,7 @@ export default function AdminForecastPage() {
                   },
                   { title: '실적', dataIndex: 'actualQty', key: 'actualQty', render: numberOrDash },
                   {
-                    title: '기준선',
+                    title: '지난주 수량',
                     dataIndex: 'baselineQty',
                     key: 'baselineQty',
                     render: (value: number) => value.toLocaleString('ko-KR'),
