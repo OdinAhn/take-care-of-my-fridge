@@ -46,9 +46,15 @@ export default function AdminForecastPage() {
   const demoAvailable = import.meta.env.DEV || window.location.hostname === 'dev.imhungry.click';
   const demo = demoAvailable && searchParams.get('demo') === '1';
   const activeTab = searchParams.get('tab') === 'result' ? 'result' : 'forecast';
-  const { data, error, isPending, isError, isPlaceholderData, refetch } = useQuery(
-    forecastQueries.detail(weekStart, demo),
-  );
+  const {
+    data: fetchedData,
+    error,
+    isPending,
+    isError,
+    isPlaceholderData,
+    refetch,
+  } = useQuery(forecastQueries.detail(weekStart, demo));
+  const data = !demo && fetchedData?.syntheticData ? undefined : fetchedData;
 
   const updateParams = (key: 'weekStart' | 'tab' | 'demo', value?: string) => {
     const next = new URLSearchParams(searchParams);
@@ -99,8 +105,8 @@ export default function AdminForecastPage() {
         <div className={styles.loading}>
           <Spin tip="판매 예측을 불러오고 있습니다" />
         </div>
-      ) : isError ? (
-        getErrorCode(error) === 'F001' ? (
+      ) : isError || !data ? (
+        !isError || getErrorCode(error) === 'F001' ? (
           <Empty
             description={
               demo
