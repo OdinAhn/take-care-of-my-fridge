@@ -78,7 +78,7 @@ export default function AdminForecastPage() {
         </Button>
         {demoAvailable && (
           <Button type={demo ? 'primary' : 'default'} onClick={() => updateParams('demo', '1')}>
-            시연 결과
+            임의 테스트 결과
           </Button>
         )}
         <Button
