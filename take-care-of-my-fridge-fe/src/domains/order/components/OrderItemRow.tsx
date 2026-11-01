@@ -3,7 +3,7 @@ import { generatePath, Link } from 'react-router';
 
 import { ROUTES } from '@/app/paths';
 import type { OrderDetailItemResponse } from '@/common/api/clients';
-import { FadeImage } from '@/common/components/FadeImage';
+import { FallbackImage } from '@/common/components/FallbackImage';
 import { formatPrice } from '@/domains/cart/format';
 import type { OrderItemRefundState } from '@/domains/refund/format';
 import { SALE_TYPE_COLORS, SALE_TYPE_LABELS } from '@/domains/sale/format';
@@ -53,10 +53,14 @@ export function OrderItemRow({ item, linkToProduct = false, refundState }: Order
     ? (item.confirmedQuantity ?? 0) * (item.unitPrice ?? 0)
     : item.lineAmount;
 
-  const image = item.productImageUrl ? (
-    <FadeImage src={item.productImageUrl} alt={detailPath ? '' : name} className={styles.image} />
-  ) : (
-    <span className={styles.imagePlaceholder} aria-hidden="true" />
+  const image = (
+    <FallbackImage
+      src={item.productImageUrl}
+      alt={detailPath ? '' : name}
+      kind="product"
+      size="small"
+      className={styles.image}
+    />
   );
   const nameText = (
     <Typography.Text strong title={name} className={styles.name}>
