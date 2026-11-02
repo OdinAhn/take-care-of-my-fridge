@@ -40,8 +40,9 @@ class ForecastDiagnosticsServiceTest {
 
         String message = service.describe(week);
 
-        assertThat(message).contains("예측 대상 상품: 1개", "순판매 수량: 4개",
-                "학습 표본: 1개", "실행 실패 (ResourceAccessException)");
+        assertThat(message).contains("예측 대상 상품: 1개 / 최소 1개 (충족)",
+                "순판매 수량: 4개 (충족)", "학습 표본: 1개 / 최소 1개 (충족)",
+                "실행 실패 (ResourceAccessException)");
     }
 
     @Test
@@ -50,7 +51,8 @@ class ForecastDiagnosticsServiceTest {
         when(sales.getDailySales(week.minusDays(84), week.minusDays(1),
                 week.minusDays(1).atTime(18, 0))).thenReturn(List.of());
 
-        assertThat(service.describe(week)).contains("예측 대상 상품: 0개",
-                "학습 표본: 0개", "시도 기록 없음");
+        assertThat(service.describe(week)).contains("예측 대상 상품: 0개 / 최소 1개 (부족)",
+                "순판매 수량: 0개 (부족)", "학습 표본: 0개 / 최소 1개 (부족)",
+                "시도 기록 없음");
     }
 }

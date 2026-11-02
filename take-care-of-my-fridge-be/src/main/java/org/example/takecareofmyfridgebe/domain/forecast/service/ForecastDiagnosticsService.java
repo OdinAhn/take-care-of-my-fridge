@@ -66,10 +66,17 @@ public class ForecastDiagnosticsService {
         }
         return "실제 판매 예측이 없습니다. 대상 주: " + weekStart
                 + "\n입력 마감: " + cutoff + " (구매 확정·완료 환불 기준)"
-                + "\n예측 대상 상품: " + productIds.size() + "개 (최소 1개)"
-                + "\n최근 84일 순판매 수량: " + netQuantity + "개 (학습 표본에 판매 이력 필요)"
-                + "\n학습 표본: " + sampleCount + "개 (실행 최소 1개)"
+                + "\n예측 대상 상품: " + productIds.size() + "개 / 최소 1개 ("
+                + requirement(!productIds.isEmpty()) + ")"
+                + "\n최근 84일 순판매 수량: " + netQuantity + "개 ("
+                + requirement(netQuantity > 0) + ")"
+                + "\n학습 표본: " + sampleCount + "개 / 최소 1개 ("
+                + requirement(sampleCount > 0) + ")"
                 + "\n배치: " + batchStatus(weekStart);
+    }
+
+    private String requirement(boolean met) {
+        return met ? "충족" : "부족";
     }
 
     private boolean hasSales(Map<LocalDate, Long> daily, LocalDate start, int days) {
